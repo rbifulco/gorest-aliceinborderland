@@ -1,0 +1,42 @@
+name: Spatial Review build
+
+on:
+  push:
+    branches:
+      - feat/spatial-review
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout Spatial Review branch
+        uses: actions/checkout@v4
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Verify game and capture syntax
+        run: npm test
+      - name: Build the full static site
+        env:
+          SPATIAL_REVIEW_BASE_PATH: /gorest-aliceinborderland
+        run: npm run build
+      - name: Check required published assets and discovery
+        run: |
+          test -f dist/.nojekyll
+          test -f dist/.well-known/spatial-review.json
+          test -f dist/spatial-review.html
+          test -f dist/spatial-review/capture.js
+          test -f dist/models/real/shibuya_bldg.glb
+          test -f dist/models/props/lod/jp_taxi.glb
+          test -f dist/cards/QH.webp
+          node -e "const fs = require('fs'); const m=JSON.parse(fs.readFileSync('dist/.well-known/spatial-review.json')); if(m.schema!=='spatial-review-discovery/v1'||m.liveCapture!=='../spatial-review.html') process.exit(1)"
+          du -sh dist
