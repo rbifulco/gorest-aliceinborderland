@@ -1,0 +1,83 @@
+name: Deploy Spatial Review to GitHub Pages
+
+# Run from the default branch: the github-pages environment can restrict
+# deployment to main even while the published source remains a feature branch.
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/deploy-spatial-review-pages.yml]
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Spatial Review build"]
+    types: [completed]
+    branches: [feat/spatial-review]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'feat/spatial-review' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out the verified Spatial Review source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || 'feat/spatial-review' }}
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify source
+        run: npm test
+
+      - name: Build GitHub Pages site
+        env:
+          SPATIAL_REVIEW_BASE_PATH: /gorest-aliceinborderland
+        run: npm run build
+
+      - name: Assert publishable website and assets
+        run: |
+          test -f dist/index.html
+          test -f dist/.nojekyll
+          test -f dist/.well-known/spatial-review.json
+          test -f dist/spatial-review.html
+          test -f dist/models/real/shibuya_bldg.glb
+          test -f dist/models/props/lod/jp_taxi.glb
+          test -f dist/cards/QH.webp
+          node -e "const fs=require('fs');const d=JSON.parse(fs.readFileSync('dist/.well-known/spatial-review.json'));if(d.schema!=='spatial-review-discovery/v1'||d.liveCapture!=='../spatial-review.html')process.exit(1)"
+          du -sh dist
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site (including .well-known)
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+          include-hidden-files: true
+
+      - name: Deploy to Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
