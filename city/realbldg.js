@@ -27,6 +27,7 @@ export function realBuildings(ctx, file, x, z, ry = 0, MAP = MAT) {
   buildingMats(); furnitureMats();
   return new GLTFLoader().loadAsync(file).then((gltf) => {
     const root = new THREE.Group(); root.name = 'real|' + file; root.position.set(x, 0, z); root.rotation.y = ry;
+    if (ctx.reviewCapture) root.userData.review = { id: file.replace(/^.*\//, '').replace(/\.glb$/, ''), owner: file.includes('shibuya') ? 'shibuya' : 'tokyotower', sourceRef: 'city/realbldg.js#realBuildings', category: 'PLATEAU' };
     gltf.scene.traverse((o) => {
       if (!o.isMesh) return;
       const cls = o.name.replace(/_\d+$/, ''), key = MAP[cls] || 'bBandD', mat = K.mats[key] || K.mats.bBandD;

@@ -71,6 +71,7 @@ export function takeshiba(ctx, x, z, ry = 0) {
   });
   return new GLTFLoader().loadAsync('./models/real/takeshiba.glb').then((gltf) => {
     const root = new THREE.Group(); root.name = 'takeshiba'; root.position.set(x, 0, z); root.rotation.y = ry;
+    if (ctx.reviewCapture) root.userData.review = { id: 'takeshiba', owner: 'takeshiba', sourceRef: 'city/takeshiba.js#takeshiba', category: 'Interiors' };
     gltf.scene.traverse((o) => {
       if (!o.isMesh) return;
       const cls = o.name.replace(/_\d+$/, ''), mat = m[cls] || m.panel, tile = mat.map?.userData?.tile || 3;

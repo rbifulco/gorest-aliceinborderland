@@ -1,0 +1,657 @@
+{
+  "recordedDate": "2026-10-22",
+  "sourceBaseline": "25b9b98ed2f59a7061ecd31cc8682f0150e0b252",
+  "sdkVersion": "0.7.0",
+  "ordinaryGame": {
+    "environment": "Headless Chromium, software WebGL, 960x600, DPR 1, ?lite, fresh contexts, alternating original/current source, no concurrent renderer workloads",
+    "readyMetric": "In-page MutationObserver timestamp at loading overlay removal; excludes delayed DevTools probe dispatch",
+    "samplesMs": {
+      "before": [
+        18950.6,
+        19513.3,
+        19528.5
+      ],
+      "after": [
+        19812.5,
+        20540.7,
+        20241.6
+      ]
+    },
+    "medianMs": {
+      "before": 19513.3,
+      "after": 20241.6
+    },
+    "medianChangePercent": 3.73,
+    "guideRegressionThreshold": "Both >10% and >=100ms; not exceeded",
+    "interaction": "Overhead-plan button: same resulting camera and target",
+    "interactionMs": {
+      "before": 7952.1,
+      "after": 7463.5
+    },
+    "visualComparison": "Overview and overhead screenshots inspected; construction, HUD and camera behavior consistent",
+    "reviewRequests": 0,
+    "applicationErrors": 0,
+    "limits": "This is a constrained software-rendered performance screen, not a device benchmark or complete gameplay test. Async asset counts vary at ready."
+  },
+  "crossOriginBridge": {
+    "buildId": "gorest-8c61c84f58b43f7919470a62",
+    "status": "passed",
+    "ordinaryWebsiteDiscovery": {
+      "schema": "spatial-review-discovery/v1",
+      "version": 1,
+      "name": "Gorest \u00b7 Alice in Borderland",
+      "websiteUrl": "../",
+      "liveCapture": "../spatial-review.html"
+    },
+    "stats": {
+      "buildId": "gorest-8c61c84f58b43f7919470a62",
+      "actors": 2073,
+      "assets": 1765,
+      "props": 13493,
+      "trees": 3720,
+      "sourceTriangles": 4109058,
+      "warnings": [],
+      "bootstrapMs": 11764,
+      "placementGroups": 1455,
+      "individualPlacements": 372,
+      "assemblies": 194,
+      "journeys": 18
+    },
+    "sourcePlacements": 17213,
+    "groups": [
+      {
+        "label": "grouped-taxi",
+        "assetId": "placement-group:shibuya:prop%3Ajp_taxi",
+        "profile": "review",
+        "nodeCount": 3,
+        "materialCount": 1,
+        "geometryCount": 1,
+        "typedGeometry": true,
+        "validation": {
+          "components": 1,
+          "instances": 8,
+          "checkedVertices": 24,
+          "maxWorldError": 3.2753960480978197e-06,
+          "stableIds": true,
+          "canonicalIsSeparate": true
+        }
+      },
+      {
+        "label": "grouped-tree",
+        "assetId": "placement-group:palace:tree%3Akusunoki%3A1",
+        "profile": "review",
+        "nodeCount": 4,
+        "materialCount": 2,
+        "geometryCount": 2,
+        "typedGeometry": true,
+        "validation": {
+          "components": 2,
+          "instances": 149,
+          "checkedVertices": 894,
+          "maxWorldError": 7.625587494252631e-06,
+          "stableIds": true,
+          "canonicalIsSeparate": true
+        }
+      }
+    ],
+    "liveTextures": [
+      {
+        "label": "taxi",
+        "slot": "map",
+        "contentType": "image/png",
+        "bytes": 1926909,
+        "width": 1024,
+        "height": 1024
+      },
+      {
+        "label": "generated-tree",
+        "slot": "map",
+        "contentType": "image/png",
+        "bytes": 55734,
+        "width": 128,
+        "height": 256
+      },
+      {
+        "label": "generated-leaf-atlas",
+        "slot": "map",
+        "contentType": "image/png",
+        "bytes": 524155,
+        "width": 1024,
+        "height": 512
+      },
+      {
+        "label": "generated-cutout-mask",
+        "slot": "alphaMap",
+        "contentType": "image/png",
+        "bytes": 69160,
+        "width": 1024,
+        "height": 512
+      },
+      {
+        "label": "grouped-taxi",
+        "slot": "map",
+        "contentType": "image/png",
+        "bytes": 1926909,
+        "width": 1024,
+        "height": 1024
+      },
+      {
+        "label": "grouped-tree",
+        "slot": "map",
+        "contentType": "image/png",
+        "bytes": 55734,
+        "width": 128,
+        "height": 256
+      }
+    ],
+    "canonicalTaxi": {
+      "assetId": "prop:jp_taxi",
+      "maps": [
+        {
+          "materialId": "prop:jp_taxi-material-jp-taxi-material-1-1",
+          "slot": "map"
+        },
+        {
+          "materialId": "prop:jp_taxi-material-jp-taxi-material-1-1",
+          "slot": "normalMap"
+        },
+        {
+          "materialId": "prop:jp_taxi-material-jp-taxi-material-1-1",
+          "slot": "roughnessMap"
+        },
+        {
+          "materialId": "prop:jp_taxi-material-jp-taxi-material-1-1",
+          "slot": "metalnessMap"
+        }
+      ]
+    },
+    "canonicalTree": {
+      "assetId": "tree:kusunoki:1",
+      "maps": [
+        {
+          "materialId": "tree:kusunoki:1-material-kusunoki-1-wood-material-1",
+          "slot": "map"
+        },
+        {
+          "materialId": "tree:kusunoki:1-material-kusunoki-1-wood-material-1",
+          "slot": "normalMap"
+        },
+        {
+          "materialId": "tree:kusunoki:1-material-kusunoki-1-leaves-material-2",
+          "slot": "map"
+        },
+        {
+          "materialId": "tree:kusunoki:1-material-kusunoki-1-leaves-material-2",
+          "slot": "alphaMap"
+        }
+      ]
+    },
+    "cancelTerminal": "cancelled",
+    "teardownStoppedReplies": true,
+    "unchangedRefresh": {
+      "before": {
+        "sha256": "31d815ee7ba7a4703528e26f01f59b76e4b569dd3760cecf392a86dcfba2386e",
+        "bytes": 5805544,
+        "buildId": "gorest-8c61c84f58b43f7919470a62",
+        "actors": 2073
+      },
+      "after": {
+        "sha256": "31d815ee7ba7a4703528e26f01f59b76e4b569dd3760cecf392a86dcfba2386e",
+        "bytes": 5805544,
+        "buildId": "gorest-8c61c84f58b43f7919470a62",
+        "actors": 2073
+      }
+    },
+    "applicationErrors": [],
+    "revisionNote": "This complete transport check preceded the final parent-assembly, hunt ownership, bay-opening and emissive/additive-effect refinements. Final build verification is recorded separately."
+  },
+  "staticHttp": [
+    {
+      "base": "root",
+      "checks": "discovery, CORS, framing, all required runtime assets and card MIME",
+      "ok": true
+    },
+    {
+      "base": "/project/ subpath",
+      "checks": "discovery, CORS, framing, all required runtime assets and card MIME",
+      "ok": true
+    }
+  ],
+  "finalBuild": {
+    "buildId": "gorest-30675664aa7cefb63be6b3b3",
+    "syntax": "passed",
+    "staticBuild": "passed",
+    "whitespace": "passed",
+    "browserAcceptance": "Capture and transport checks passed; hosted editor did not complete preparation in software-rendered environment"
+  },
+  "officialEditor": {
+    "origin": "https://spatial-review.alterno.dev",
+    "status": "blocked during eager preparation in this test environment",
+    "initialAttempt": {
+      "buildId": "gorest-ce4431094bd60b1d42cf3701",
+      "result": "Preparation exceeded the official editor 300-second absolute deadline",
+      "preparedAssets": 180,
+      "catalogAssets": 1763,
+      "javascriptErrors": 0,
+      "httpErrors": 0,
+      "environment": "Headless Chromium / SwiftShader at 1440x900, DPR 1"
+    },
+    "responseToInitialAttempt": "Minimized unique placement-group assets within a 4,500-actor budget; position-only exact-welded overview geometry under both request profiles; cooperative non-timer producer yielding.",
+    "finalAttempt": {
+      "buildId": "gorest-30675664aa7cefb63be6b3b3",
+      "environment": "Fresh Headless Chromium / SwiftShader at 960x600, DPR 0.5, with reduced-motion preference",
+      "status": "terminal preparation timeout",
+      "sourceStats": {
+        "buildId": "gorest-30675664aa7cefb63be6b3b3",
+        "actors": 4497,
+        "assets": 920,
+        "props": 13493,
+        "trees": 3720,
+        "sourceTriangles": 4109058,
+        "warnings": [],
+        "bootstrapMs": 15129,
+        "placementBudget": {
+          "actors": 4497,
+          "otherActors": 246,
+          "placements": 17213,
+          "groups": 610,
+          "groupedPlacements": 13572,
+          "individualPlacements": 3641,
+          "actorsSaved": 12962,
+          "candidateGroups": 1453,
+          "fullyGroupedActors": 2069,
+          "maxActors": 4500
+        },
+        "placementGroups": 610,
+        "individualPlacements": 3641,
+        "assemblies": 194,
+        "journeys": 18
+      },
+      "preparedAssets": 221,
+      "catalogAssets": 920,
+      "successfulAssetResponses": 226,
+      "assetErrorResponses": 0,
+      "terminalMessage": "Scene preparation stopped making progress. 221 of 920 scene assets ready. Retry the connection.",
+      "capturedTerminalStateMs": 365461.3,
+      "applicationErrors": [],
+      "httpErrors": [],
+      "teardownAbortedRequests": [
+        {
+          "url": "http://127.0.0.1:8765/models/real/shibuya_frn.glb",
+          "failure": {
+            "errorText": "net::ERR_ABORTED"
+          }
+        }
+      ],
+      "traceSummary": {
+        "requestCount": 226,
+        "responseCount": 226,
+        "failedResponses": [],
+        "latencyMs": {
+          "min": 4,
+          "median": 141.0,
+          "max": 22186
+        },
+        "catalogAtSeconds": [
+          17.583300048828125
+        ],
+        "lastResponseAtSeconds": 323.1503000488281,
+        "lastResponses": [
+          {
+            "assetId": "asset:shibuya-Mesh-1",
+            "ms": 47,
+            "atSeconds": 293.92030004882815
+          },
+          {
+            "assetId": "asset:shibuya-Mesh-10",
+            "ms": 48,
+            "atSeconds": 293.92130004882813
+          },
+          {
+            "assetId": "asset:shibuya-Mesh-11",
+            "ms": 11796,
+            "atSeconds": 305.7203000488281
+          },
+          {
+            "assetId": "asset:shibuya-Mesh-12",
+            "ms": 11796,
+            "atSeconds": 305.72130004882814
+          },
+          {
+            "assetId": "asset:shibuya-Mesh-13",
+            "ms": 7778,
+            "atSeconds": 313.5033000488281
+          },
+          {
+            "assetId": "asset:shibuya-Mesh-14",
+            "ms": 7784,
+            "atSeconds": 313.5103000488281
+          },
+          {
+            "assetId": "asset:shibuya-Mesh-15",
+            "ms": 9630,
+            "atSeconds": 323.14930004882814
+          },
+          {
+            "assetId": "asset:shibuya-Mesh-16",
+            "ms": 9437,
+            "atSeconds": 323.1503000488281
+          }
+        ],
+        "terminalEvents": [],
+        "requestMaxBytesRange": [
+          1048576,
+          11107767
+        ],
+        "errors": [],
+        "badResponses": [],
+        "warningCount": 43
+      },
+      "unverified": [
+        "Scene editor interaction",
+        "Asset editor visual inspection",
+        "Experience editor interaction",
+        "Feedback export and source-change/refresh roundtrip",
+        "Unresolved feedback persistence across refresh"
+      ],
+      "disposableSourceEdit": "Not attempted because the editor never opened; a1_aerial FOV remains32."
+    },
+    "environmentHardware": "No /dev/dri or NVIDIA device exposed in the test container; hardware-accelerated browser acceptance is unavailable here.",
+    "interpretation": "All received geometry requests succeeded and the render-free complete scan passes size gates. The hosted consumer failed its preparation deadline in SwiftShader. Software rendering is a likely contributor, but acceptable full-editor performance on hardware has not been established."
+  },
+  "productionDeployment": "Not requested; no production deployment or hosting changes performed",
+  "staticSubpathCapturePreviousRevision": {
+    "source": {
+      "stats": {
+        "buildId": "gorest-ce4431094bd60b1d42cf3701",
+        "actors": 2069,
+        "assets": 1763,
+        "props": 13493,
+        "trees": 3720,
+        "sourceTriangles": 4109058,
+        "warnings": [],
+        "bootstrapMs": 12478,
+        "placementGroups": 1453,
+        "individualPlacements": 370,
+        "assemblies": 194,
+        "journeys": 18
+      },
+      "props": 13493,
+      "trees": 3720,
+      "propDesigns": 52,
+      "treeDesigns": 12
+    },
+    "hierarchy": {
+      "relations": [
+        {
+          "assemblyId": "place:port_yard",
+          "parentAssemblyId": "place:port"
+        },
+        {
+          "assemblyId": "place:port_sea",
+          "parentAssemblyId": "place:port"
+        },
+        {
+          "assemblyId": "place:arena_in",
+          "parentAssemblyId": "place:arena"
+        },
+        {
+          "assemblyId": "place:diamond_in",
+          "parentAssemblyId": "place:diamond"
+        },
+        {
+          "assemblyId": "place:bulb_ug",
+          "parentAssemblyId": "place:bulb"
+        },
+        {
+          "assemblyId": "place:shibuya_sub",
+          "parentAssemblyId": "place:shibuya"
+        }
+      ],
+      "checkedActors": 2069,
+      "maxWorldPoseError": 1.0880185641326534e-14
+    },
+    "waterSource": {
+      "holes": [
+        [
+          427.5,
+          -205.5,
+          544.5,
+          -94.5
+        ],
+        [
+          -410,
+          -477,
+          -404,
+          -455
+        ],
+        [
+          -1246.7,
+          143.5,
+          -831.7,
+          479.5
+        ]
+      ],
+      "baked": true,
+      "triangles": 20
+    },
+    "waterValidation": {
+      "checks": [
+        {
+          "hole": [
+            427.5,
+            -205.5,
+            544.5,
+            -94.5
+          ],
+          "rayHits": 0,
+          "interiorCoveredArea": 0
+        },
+        {
+          "hole": [
+            -410,
+            -477,
+            -404,
+            -455
+          ],
+          "rayHits": 0,
+          "interiorCoveredArea": 0
+        },
+        {
+          "hole": [
+            -1246.7,
+            143.5,
+            -831.7,
+            479.5
+          ],
+          "rayHits": 0,
+          "interiorCoveredArea": 0
+        }
+      ],
+      "wetControlHits": 1,
+      "triangles": 20
+    },
+    "initialSignature": {
+      "sha256": "afae15da6a2f6e974643a8fbf192c8a4f4ae7d191f0ad0dae6e69b30b389440a",
+      "bytes": 5809599,
+      "buildId": "gorest-ce4431094bd60b1d42cf3701",
+      "actors": 2069
+    },
+    "refreshedSignature": {
+      "sha256": "afae15da6a2f6e974643a8fbf192c8a4f4ae7d191f0ad0dae6e69b30b389440a",
+      "bytes": 5809599,
+      "buildId": "gorest-ce4431094bd60b1d42cf3701",
+      "actors": 2069
+    },
+    "errors": [],
+    "httpErrors": [],
+    "escapedStaticPaths": [],
+    "revisionNote": "Verified the complete captured source and transport at build gorest-ce4431094bd60b1d42cf3701 before the subsequent asset-count and overview-buffer optimization.",
+    "cutoutValidation": {
+      "pixels": 524288,
+      "discarded": 375621,
+      "kept": 148667,
+      "mismatches": 0,
+      "sourceAlphaThreshold": 0.5
+    }
+  },
+  "optimizedCapture": {
+    "buildId": "gorest-3cf3f5363669dd17f98b0264",
+    "status": "All overview productions and critical source/transport checks passed; nonsemantic catalog array order was diagnosed separately",
+    "revisionNote": "Subsequent final changes stabilize direct-root catalog order and tree overview/detail component names, and add static header deployment-prefix/card-image handling. Geometry, placement coverage and grouping are unchanged.",
+    "stats": {
+      "buildId": "gorest-3cf3f5363669dd17f98b0264",
+      "actors": 4497,
+      "assets": 920,
+      "props": 13493,
+      "trees": 3720,
+      "sourceTriangles": 4109058,
+      "warnings": [],
+      "bootstrapMs": 11885,
+      "placementBudget": {
+        "actors": 4497,
+        "otherActors": 246,
+        "placements": 17213,
+        "groups": 610,
+        "groupedPlacements": 13572,
+        "individualPlacements": 3641,
+        "actorsSaved": 12962,
+        "candidateGroups": 1453,
+        "fullyGroupedActors": 2069,
+        "maxActors": 4500
+      },
+      "placementGroups": 610,
+      "individualPlacements": 3641,
+      "assemblies": 194,
+      "journeys": 18
+    },
+    "overviewProfiles": [
+      {
+        "profile": "scene",
+        "assets": 920,
+        "passed": 920,
+        "failed": 0,
+        "milliseconds": 3796,
+        "withinBudget": true,
+        "totals": {
+          "wireBytes": 128342936,
+          "allocationBytes": 98390258,
+          "reconstructedNormalBytes": 58591692,
+          "geometryBytes": 97266570,
+          "nodes": 8319,
+          "expandedInstances": 26446,
+          "vertices": 4882641,
+          "triangles": 6445813
+        }
+      },
+      {
+        "profile": "review",
+        "assets": 920,
+        "passed": 920,
+        "failed": 0,
+        "milliseconds": 1034,
+        "withinBudget": true,
+        "totals": {
+          "wireBytes": 128440486,
+          "allocationBytes": 98390258,
+          "reconstructedNormalBytes": 58591692,
+          "geometryBytes": 97266570,
+          "nodes": 8319,
+          "expandedInstances": 22298,
+          "vertices": 4882641,
+          "triangles": 6445813
+        }
+      }
+    ],
+    "consumerLimits": {
+      "payloadBytesPerProfile": 201326592,
+      "allocationBytesPerProfile": 201326592,
+      "nodes": 100000,
+      "expandedInstances": 200000
+    },
+    "timingLimit": "Render-free producer timings exclude official-editor rendering and asset-preview preparation.",
+    "hierarchy": {
+      "relations": [
+        {
+          "assemblyId": "place:port_yard",
+          "parentAssemblyId": "place:port"
+        },
+        {
+          "assemblyId": "place:port_sea",
+          "parentAssemblyId": "place:port"
+        },
+        {
+          "assemblyId": "place:arena_in",
+          "parentAssemblyId": "place:arena"
+        },
+        {
+          "assemblyId": "place:diamond_in",
+          "parentAssemblyId": "place:diamond"
+        },
+        {
+          "assemblyId": "place:bulb_ug",
+          "parentAssemblyId": "place:bulb"
+        },
+        {
+          "assemblyId": "place:shibuya_sub",
+          "parentAssemblyId": "place:shibuya"
+        }
+      ],
+      "checkedActors": 4497,
+      "maxWorldPoseError": 1.0724754417879012e-13
+    },
+    "water": {
+      "checks": [
+        {
+          "hole": [
+            427.5,
+            -205.5,
+            544.5,
+            -94.5
+          ],
+          "rayHits": 0,
+          "interiorCoveredArea": 0
+        },
+        {
+          "hole": [
+            -410,
+            -477,
+            -404,
+            -455
+          ],
+          "rayHits": 0,
+          "interiorCoveredArea": 0
+        },
+        {
+          "hole": [
+            -1246.7,
+            143.5,
+            -831.7,
+            479.5
+          ],
+          "rayHits": 0,
+          "interiorCoveredArea": 0
+        }
+      ],
+      "wetControlHits": 1,
+      "triangles": 20
+    },
+    "cutout": {
+      "pixels": 524288,
+      "discarded": 375621,
+      "kept": 148667,
+      "mismatches": 0,
+      "sourceAlphaThreshold": 0.5
+    },
+    "sourcePlacements": 17213,
+    "applicationErrors": [],
+    "httpErrors": [],
+    "escapedStaticPaths": [],
+    "unchangedRefresh": {
+      "keyedMetadataSha256": "2c9431b9c3037f917f343e4ed6d468aea9d08aeaf4c624a3981d3dbd128c4249",
+      "keyedDifferences": 0,
+      "producerMutationDifferences": 0,
+      "rawOrderDifference": "Async Shibuya underground completion moved its actor relative to three compound trucks; final source sorts direct roots by resolved metadata ID."
+    }
+  }
+}

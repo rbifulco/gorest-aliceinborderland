@@ -557,6 +557,7 @@ function cutLand(x0, z0, x1, z1) {
 }
 function waterHole(x0, z0, x1, z1) {   // discard the bay water plane inside a world rect (chains other patches)
   const water = X.scene.children.find((o) => o.isMesh && o.geometry?.parameters?.width === 9000); if (!water) return;
+  if (X.reviewCapture) (water.userData.reviewWaterHoles ||= []).push([x0, z0, x1, z1].map((value) => Number(value.toFixed(1))));
   const m = water.material, prev = m.onBeforeCompile.bind(m), prevKey = m.customProgramCacheKey.bind(m);
   const test = `if (vSubW.x > ${x0.toFixed(1)} && vSubW.x < ${x1.toFixed(1)} && vSubW.y > ${z0.toFixed(1)} && vSubW.y < ${z1.toFixed(1)}) discard;`;
   m.onBeforeCompile = (sh, r) => {

@@ -1,0 +1,15 @@
+// Capture-only seed, installed BEFORE importing modules that generate textures at module scope.
+// Nothing in this file is imported by the ordinary game.
+let seed = 20241018;
+Math.random = () => {
+  seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+  let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+  return ((t ^ t >>> 14) >>> 0) / 4294967296;
+};
+
+import('./capture.js').then(({ startCapture }) => startCapture()).catch((error) => {
+  console.error('Spatial Review capture failed', error);
+  document.getElementById('status').textContent = `Capture failed: ${error.message}`;
+  document.documentElement.dataset.captureState = 'error';
+});

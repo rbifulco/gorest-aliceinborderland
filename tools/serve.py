@@ -1,10 +1,23 @@
 # Dev server: like `python -m http.server`, but with no-cache headers so edited modules always reload.
 # POST /__shot?name=x with an image body saves it to .tmp/shots/x.jpg (full-res canvas captures for review).
 import http.server, sys, re
+from urllib.parse import urlsplit
 
 class NoCache(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):
         self.send_header('Cache-Control', 'no-store, must-revalidate')
+        path = urlsplit(self.path).path
+        origin = self.headers.get('Origin', '')
+        parsed = urlsplit(origin)
+        local_peer = parsed.hostname in ('localhost', '127.0.0.1', '::1') and parsed.scheme in ('http', 'https')
+        approved = origin == 'https://spatial-review.alterno.dev' or local_peer
+        # Only discovery and public images need cross-origin HTTP reads. Geometry and
+        # generated textures travel over the capture bridge's exact-origin policy.
+        if approved and (path.endswith('/.well-known/spatial-review.json') or re.search(r'\.(png|jpe?g|webp|avif)$', path, re.I)):
+            self.send_header('Access-Control-Allow-Origin', origin)
+            self.send_header('Vary', 'Origin')
+        if path.endswith('/spatial-review.html'):
+            self.send_header('Content-Security-Policy', "frame-ancestors 'self' https://spatial-review.alterno.dev http://localhost:* http://127.0.0.1:*")
         super().end_headers()
 
     def do_POST(self):

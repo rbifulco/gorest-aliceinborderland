@@ -39,13 +39,57 @@ from the show, and one of them (♦4 「電球」 Light Bulb) is fully playable.
 ## Run it
 
 ```bash
-npm install
-python tools/serve.py 8765
+npm ci
+npm run dev
 ```
 
 Open http://localhost:8765, pick a district from the list, and press ▶ to walk around: WASD to move, Shift to run,
 Space to jump, V to switch to first person. On Windows, `tools/launch.ps1` starts the server and opens the city in
 your browser.
+
+## Spatial Review
+
+This branch adds a dedicated, frozen representation of the city for spatial feedback with
+[Alterno Spatial Review](https://spatial-review.alterno.dev). Start the local server as above, then
+open [Spatial Review for the local website](https://spatial-review.alterno.dev/review?site=http%3A%2F%2Flocalhost%3A8765%2F).
+Keep the server running while reviewing; your browser may ask permission to access localhost.
+
+**Acceptance status:** capture, geometry, texture, placement, build and ordinary-game checks pass.
+The hosted editor's full UI remains unverified: the software-rendered test browser hit its
+preparation deadline at 221 of 920 assets, with all received asset responses successful. Scene,
+Asset, Experience and feedback-export interactions still need acceptance in a browser with
+hardware acceleration. See the integration plan below for the measured results and limitation.
+
+The ordinary website is `http://localhost:8765/`. Its static discovery document is
+`http://localhost:8765/.well-known/spatial-review.json`, and its capture document is
+`http://localhost:8765/spatial-review.html`. The capture page also generates an editor link for
+the actual server address using the SDK's `spatialReviewEditorUrl()` helper. When entering a website
+address in the editor, use the ordinary website URL so discovery selects the capture document.
+
+The capture reuses the game's construction code and records every prop and tree from its source
+placement, independently of the game's camera culling. To fit the editor's 5,000-actor limit,
+the largest repeated sets are grouped by authored zone and design; smaller sets share their canonical
+asset as ordinary actors. Groups retain stable instance IDs;
+one actual placement of each design keeps its separate canonical Asset view. The editor prepares compact geometry overviews first and requests textured detail on demand. Group transforms affect the complete group; instance annotations identify
+individual members. Merged procedural environment surfaces retain their existing coarse construction
+boundaries. The 18 authored trailer shots are available in Experience. Shader effects, gameplay, and animation have
+the limits listed in the [integration plan](docs/spatial-review-integration-plan.md), which also records
+the verification status and source mappings.
+
+The official editor origin is explicitly enabled. It can receive registered geometry, materials,
+textures, and source references through the capture page. Review changes are proposals: export feedback,
+apply it to the referenced source, then refresh the review to check the result.
+
+```bash
+npm test            # syntax checks for game, capture, and build modules
+npm run build       # prepare dist/, including runtime models, textures, dependencies, and discovery
+```
+
+The static build supports serving from a project subdirectory. For a host mounting the export at
+`/gorest-aliceinborderland/`, run `SPATIAL_REVIEW_BASE_PATH=/gorest-aliceinborderland npm run build`
+to generate matching framing and CORS paths in `_headers`. Hosts that do not read `_headers` need
+the equivalent response headers configured separately. Building prepares the files locally; hosting
+is configured separately. The ordinary game page does not load the review SDK.
 
 ## The trailer
 

@@ -15,5 +15,6 @@ models/people/*_rig*
 models/people/*.log
 models/people/*.glb
 .tmp/
+dist/
 # rendered trailer (194 MB; rebuild with trailer/render.sh + trailer/music.py + trailer/edit.py)
 trailer/out/

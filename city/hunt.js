@@ -56,6 +56,7 @@ function cast(cars) {
 
 export function hunt(ctx) {
   const { scene, camera, updates } = ctx;
+  const reviewCapture = ctx.reviewCapture === true;
   const root = new THREE.Group(); root.name = 'hunt'; scene.add(root);
   const loader = new GLTFLoader(), lib = new Map(), mixers = [], walkers = [];
   let gun = null, muzzle = new THREE.Object3D(), active = false;
@@ -130,7 +131,8 @@ export function hunt(ctx) {
   const drop = [['umbrella_open', 6], ['umbrella_clear', 5], ['handbag', 4], ['school_bag', 3], ['smartphone', 6], ['shopping_bag', 4], ['bicycle_fallen', 3]];
   for (const [name, n] of drop) for (let i = 0; i < n; i++) {
     const a = Math.random() * 6.283, r = 4 + Math.pow(Math.random(), .7) * 34;
-    prop(name, C.x + Math.cos(a) * r, .07, C.z + Math.sin(a) * r, Math.random() * 6.283);
+    prop(name, C.x + Math.cos(a) * r, .07, C.z + Math.sin(a) * r, Math.random() * 6.283, 1, 0,
+      reviewCapture ? { sourceRef: 'city/hunt.js#hunt' } : {});
   }
 
   /* ── people ── */
@@ -156,12 +158,13 @@ export function hunt(ctx) {
       const o = cloneSkinned(g.scene); o.traverse((c) => { if (c.isMesh) { c.castShadow = true; c.geometry.computeBoundingSphere(); c.boundingSphere = c.geometry.boundingSphere.clone(); c.boundingSphere.radius *= 1.4; } });   // cull on the bind-pose sphere (skeleton not posed at first cull)
       const body = new THREE.Group(); o.rotation.y = -Math.PI / 2; body.add(o);   // Tripo characters face +X → +Z
       const h = new THREE.Group(); h.add(body); root.add(h);
+      if (reviewCapture) h.name = `hunt-person-${a.id}`;
       const pick = (re) => g.animations.find((c) => re.test(c.name));   // role-aware fallback: never a run cycle under a crouch
       const mx = new THREE.AnimationMixer(o), clip = g.animations.find((c) => c.name === a.clip) || (a.path ? pick(/^(run|flee)/) : pick(/frightened|scared|afraid/)) || g.animations[0];
-      const act = mx.clipAction(clip); act.play(); act.time = Math.random() * clip.duration; act.timeScale = .9 + Math.random() * .2; mixers.push(mx);
+      const act = mx.clipAction(clip); act.play(); act.time = reviewCapture ? 0 : Math.random() * clip.duration; act.timeScale = reviewCapture ? 1 : .9 + Math.random() * .2; mixers.push(mx);
       if (a.crouch) {   // crouched behind a car: knees bent, hips ~45 cm lower
         const bones = {}; o.traverse((x) => { if (x.isBone) bones[x.name] = x; });
-        crouchers.push({ h, bones, k: .8 + Math.random() * .2 }); body.position.y = -.42;
+        crouchers.push({ h, bones, k: reviewCapture ? .9 : .8 + Math.random() * .2 }); body.position.y = -.42;
       }
       if (a.path) { walkers.push({ h, a, L: a.path[0].distanceTo(a.path[1]), s: a.s * a.path[0].distanceTo(a.path[1]) }); continue; }
       h.position.set(a.x, a.y, a.z);
@@ -186,8 +189,10 @@ export function hunt(ctx) {
   let fireT = 0, burst = 0, sweep = 0;
   const _w = new THREE.Vector3(), _d = new THREE.Vector3(), _tq = new THREE.Quaternion(), _ts = new THREE.Vector3(1, 1, 1), _te = new THREE.Euler();
   updates.push((dt, t) => {
+    // Capture samples the authored initial poses even when the camera is in another district.
+    if (reviewCapture) { dt = 0; t = 0; }
     huntState.firing = false;
-    active = camera.position.distanceTo(C) < 420; root.visible = active; wet.visible = active && night && camera.position.distanceTo(C) < 300;
+    active = reviewCapture || camera.position.distanceTo(C) < 420; root.visible = active; wet.visible = !reviewCapture && active && night && camera.position.distanceTo(C) < 300;
     if (active !== floodLive) { floodLive = active; flood.shadow.autoUpdate = active; flood.shadow.needsUpdate = true; }   // far away: freeze the flood's shadow map (static casters only)
     if (!active) return;
     for (const mx of mixers) mx.update(dt);

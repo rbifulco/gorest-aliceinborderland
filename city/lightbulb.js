@@ -198,6 +198,7 @@ function cutLand(ctx, x0, z0, x1, z1) {
 }
 function waterHole(ctx, x0, z0, x1, z1) {
   const water = ctx.scene.children.find((o) => o.isMesh && o.geometry?.parameters?.width === 9000); if (!water) return;
+  if (ctx.reviewCapture) (water.userData.reviewWaterHoles ||= []).push([x0, z0, x1, z1].map((value) => Number(value.toFixed(1))));
   const m = water.material, prev = m.onBeforeCompile.bind(m), prevKey = m.customProgramCacheKey.bind(m);
   const test = `if (vSubW.x > ${x0.toFixed(1)} && vSubW.x < ${x1.toFixed(1)} && vSubW.y > ${z0.toFixed(1)} && vSubW.y < ${z1.toFixed(1)}) discard;`;
   m.onBeforeCompile = (sh, r) => {
@@ -216,6 +217,8 @@ const NOISE_GLSL = `float lbH(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7
 float lbN(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f); return mix(mix(lbH(i), lbH(i + vec2(1, 0)), f.x), mix(lbH(i + vec2(0, 1)), lbH(i + vec2(1, 1)), f.x), f.y); }`;
 function createLevel(ctx, root, { mouths, BRK, ELECTRODES }) {
   const { scene, camera } = ctx, ug = new THREE.Group(); root.add(ug);
+  const reviewCapture = ctx.reviewCapture === true;
+  if (reviewCapture) ug.name = 'lightbulb-underground';
   const S = { mode: 'idle', t: 0, level: L0, correct: 0, sw: [false, false, false], door: 0, doorGoal: 0, shutter: 0, shutterGoal: 0, jets: 0, heat: 0, breath: BREATH, pending: -1, pendT: 0, endT: 0, cause: '' };
   let P = null, A = null, G = null, DN = null;   // player, audio, grade, dayNight (attach)
   /* water: one rising plane over chamber, corridor and bulb room; foam churns around the jets and along the walls */
@@ -308,17 +311,19 @@ function createLevel(ctx, root, { mouths, BRK, ELECTRODES }) {
   /* other players: four people up to their knees, eyes on their phones */
   const people = [];
   { const spots = [[-412.5, -452.5, .6], [-401.5, -444.5, -2.3], [-410.5, -441, 2.6], [-404, -450.5, -.9]], ids = ['player_f', 'office_lady', 'student', 'punk'], loader = new GLTFLoader();
+    // Stable source order in a capture must not depend on which GLTF finishes first.
+    const reviewPeople = reviewCapture ? spots.map((_, i) => { const h = new THREE.Group(); h.name = `lightbulb-person-${ids[i]}`; ug.add(h); return h; }) : null;
     let phone = null; const waiting = [];
     loader.load('./models/props/lod/smartphone.glb', (g) => { phone = g.scene; for (const f of waiting) f(); });
     const _ax = new THREE.Vector3(), _pq = new THREE.Quaternion(), _rq = new THREE.Quaternion();
     const bend = (b, axis, a) => { if (!b) return; b.parent.updateWorldMatrix(true, false); b.parent.getWorldQuaternion(_pq); _rq.setFromAxisAngle(axis, a); b.quaternion.premultiply(_pq.clone().invert().multiply(_rq).multiply(_pq)); b.updateMatrixWorld(true); };
     spots.forEach(([x, z, yaw], i) => loader.load(`./models/people/web/${ids[i]}.glb`, (g) => {
       const o = cloneSkinned(g.scene); o.traverse((c) => { if (c.isMesh) { c.castShadow = true; c.frustumCulled = false; } });
-      const body = new THREE.Group(); o.rotation.y = -Math.PI / 2; body.add(o); const h = new THREE.Group(); h.add(body); h.position.set(x, F, z); h.rotation.y = yaw; ug.add(h);
+      const body = new THREE.Group(); o.rotation.y = -Math.PI / 2; body.add(o); const h = reviewCapture ? reviewPeople[i] : new THREE.Group(); h.add(body); h.position.set(x, F, z); h.rotation.y = yaw; if (!reviewCapture) ug.add(h);
       const mx = new THREE.AnimationMixer(o), clip = g.animations.find((c) => /idle|wait|look_around|standing/i.test(c.name)) || g.animations[0];
-      const act = mx.clipAction(clip); act.play(); act.time = Math.random() * clip.duration; act.timeScale = .7;
+      const act = mx.clipAction(clip); act.play(); act.time = reviewCapture ? 0 : Math.random() * clip.duration; act.timeScale = .7;
       const bones = {}; o.traverse((b) => { if (b.isBone) bones[b.name] = b; });
-      const P0 = { h, mx, bones, base: new THREE.Vector3(x, F, z), seed: Math.random() * 6 };
+      const P0 = { h, mx, bones, base: new THREE.Vector3(x, F, z), seed: reviewCapture ? i : Math.random() * 6 };
       const addPhone = () => { const hand = bones.R_Hand; if (!hand || !phone) return; const p = phone.clone(); const bb = new THREE.Box3().setFromObject(p), sz = bb.getSize(new THREE.Vector3()); p.position.sub(bb.getCenter(new THREE.Vector3())); const holder = new THREE.Group(); holder.add(p); holder.scale.setScalar(.15 / Math.max(sz.x, sz.y, sz.z)); const ws = new THREE.Vector3(); hand.getWorldScale(ws); holder.scale.divideScalar(ws.x || 1); holder.position.set(0, .05, .06); hand.add(holder);
         const glow = new THREE.Mesh(new THREE.PlaneGeometry(.06, .11), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.5, 1.8, 2.1) })); glow.position.set(0, .005, 0); glow.rotation.x = -Math.PI / 2; holder.add(glow); };
       if (phone) addPhone(); else waiting.push(addPhone);
@@ -398,7 +403,9 @@ function createLevel(ctx, root, { mouths, BRK, ELECTRODES }) {
   }
   const zoneMeshes = () => K.zoneMeshes.get('bulb_ug') || [];
   function update(dt, t) {
-    const cam = camera.position, near = Math.hypot(cam.x + 407, cam.z + 450) < 75 && cam.y < 6;
+    // Review includes the complete underground venue, sampled before gameplay begins.
+    if (reviewCapture) { dt = 0; t = 0; }
+    const cam = camera.position, near = reviewCapture || (Math.hypot(cam.x + 407, cam.z + 450) < 75 && cam.y < 6);
     ug.visible = near; for (const m of zoneMeshes()) m.visible = near;
     for (const l of lights) l.intensity = near ? l.userData.I * (l === lights[2] || S.mode !== 'over' ? 1 : .4 + .6 * Math.random()) : 0;
     const inBox = cam.x > X0 - 1 && cam.x < X1 + 1 && cam.z > -477 && cam.z < ROOM.z1 + 1 && cam.y < -.3;

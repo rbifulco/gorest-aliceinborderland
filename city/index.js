@@ -261,7 +261,7 @@ function heightAt(x, z, r) {
 }
 
 /* ───────────── airships with hanging card banners ───────────── */
-function airships(scene, updates) {
+function airships(scene, updates, reviewCapture = false) {
   const body = new THREE.MeshStandardMaterial({ color: 0xc9ccd0, roughness: .35, metalness: .75 });
   const dark = new THREE.MeshStandardMaterial({ color: 0x2c3036, roughness: .5, metalness: .6 });
   const list = [['Q', 'H', -900, -250, 330, 170], ['K', 'D', -300, -420, 260, 190], ['J', 'C', -620, -720, 300, 160], ['K', 'S', -200, 120, 380, 210], ['K', 'S', -1150, 80, 260, 150], ['Q', 'D', 150, -500, 340, 230], ['J', 'S', -1350, -600, 250, 180], ['Q', 'S', -800, 250, 280, 175], ['J', 'H', 60, -250, 300, 200], ['Q', 'C', -400, -900, 260, 185], ['J', 'D', -1000, -650, 300, 165]];
@@ -278,6 +278,10 @@ function airships(scene, updates) {
   });
   list.forEach(([rk, st, cx, cz, R, y], i) => {
     const g = new THREE.Group();
+    if (reviewCapture) {
+      g.name = `airship-${rk}${st}-${i + 1}`;
+      g.userData.review = { id: g.name, owner: 'airships', sourceRef: 'city/index.js#airships', category: 'Airships' };
+    }
     const hull = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 16), body); hull.scale.set(26, 6.5, 6.5); g.add(hull);
     for (let k = 0; k < 4; k++) { const fin = new THREE.Mesh(new THREE.BoxGeometry(7, .3, 5), body); fin.position.x = -22; fin.rotation.x = k * Math.PI / 2; fin.translateY(0); fin.geometry.translate(0, 0, 4.5); g.add(fin); }
     for (let k = -2; k <= 2; k++) { const rib = new THREE.Mesh(new THREE.TorusGeometry(6.4 * Math.sqrt(1 - (k * 8 / 26) ** 2), .08, 6, 40), dark); rib.position.x = k * 8; rib.rotation.y = Math.PI / 2; g.add(rib); }
@@ -360,7 +364,7 @@ function rainbowBridge() {
 }
 
 /* ───────────── build ───────────── */
-export function buildCity({ scene, camera, highways = [] }) {
+export function buildCity({ scene, camera, highways = [], reviewCapture = false }) {
   defineMaterials();
   const updates = [], pois = [], collidables = [], dayNight = [];
   const R = K.rng(777);
@@ -370,11 +374,13 @@ export function buildCity({ scene, camera, highways = [] }) {
   const landGeo = new THREE.ShapeGeometry(shape); landGeo.rotateX(-Math.PI / 2);
   const uv = landGeo.attributes.uv, pos = landGeo.attributes.position; for (let i = 0; i < uv.count; i++) uv.setXY(i, pos.getX(i) / 8, pos.getZ(i) / 8);
   const land = new THREE.Mesh(landGeo, std({ map: K.texConcrete, color: 0x6f716e, roughness: .95 })); land.position.y = -.08; land.receiveShadow = true; scene.add(land); collidables.push(land);
+  if (reviewCapture) { land.name = 'Tokyo land'; land.userData.review = { id: 'land', owner: 'landscape', sourceRef: 'city/index.js#buildCity', category: 'Landscape' }; }
 
   // bay
   texWaterN.repeat.set(1100, 1100);   // ~8 m ripple tiles
   const water = new THREE.Mesh(new THREE.PlaneGeometry(9000, 9000), new THREE.MeshStandardMaterial({ color: 0x24465c, roughness: .14, metalness: .1, envMapIntensity: .6, normalMap: texWaterN, normalScale: new THREE.Vector2(.22, .22) }));
   water.rotation.x = -Math.PI / 2; water.position.set(0, WATER_Y, 0); scene.add(water);
+  if (reviewCapture) { water.name = 'Tokyo Bay'; water.userData.review = { id: 'bay', owner: 'landscape', sourceRef: 'city/index.js#buildCity', category: 'Landscape' }; }
   updates.push((dt) => { texWaterN.offset.x += dt * .03; texWaterN.offset.y += dt * .018; });
 
   // quay walls along the coastline
@@ -470,10 +476,14 @@ export function buildCity({ scene, camera, highways = [] }) {
 
   // hero districts
   const pending = [];   // async loads that add collision (main.js waits for them before building the BVH)
-  const ctx = { THREE, K, cards, map, scene, camera, updates, pois, collidables, dayNight, tree, prop, pending };
+  const ctx = { THREE, K, cards, map, scene, camera, updates, pois, collidables, dayNight, tree, prop, pending, reviewCapture };
   for (const d of map.DISTRICTS) {
     const mod = DISTRICT_MODULES[d.id]; if (!mod) continue;
-    try { setZone(d.id); mod.build(ctx, d); } catch (e) { console.error('district failed', d.id, e); }
+    const firstChild = reviewCapture ? scene.children.length : 0;
+    try { setZone(d.id); mod.build(ctx, d); } catch (e) { if (reviewCapture) throw e; console.error('district failed', d.id, e); }
+    if (reviewCapture) scene.children.slice(firstChild).forEach((root, i) => {
+      root.userData.review ||= { id: `${d.id}-${root.name || root.type}-${i + 1}`, owner: d.id, sourceRef: `city/${d.id === 'bulb' ? 'lightbulb' : d.id}.js#build`, category: 'Districts' };
+    });
   }
   setZone('compound');
 
@@ -481,9 +491,19 @@ export function buildCity({ scene, camera, highways = [] }) {
   setZone('compound');
   prop('tiger', -522, .06, 118, .8); prop('panther', -1036, 7.2, 199, 2.4); prop('panther', -1003, .06, 280, -1.2);
   for (const [x, z, a] of [[-742, -262, .4], [-736, -256, 2.2], [-748, -251, -1], [-731, -268, 1.4]]) prop('deer', x, .06, z, a);
-  try { hunt(ctx); } catch (e) { console.error('hunt scene failed', e); }
-  atmosphere(ctx);
-  try { birds(ctx); } catch (e) { console.error('birds failed', e); }
+  const firstHuntChild = reviewCapture ? scene.children.length : 0;
+  // The hunt's authored props belong to Shibuya. Keep that review ownership
+  // explicit rather than inheriting the preceding wildlife batch's zone.
+  if (reviewCapture) setZone('shibuya');
+  try { hunt(ctx); } catch (e) { if (reviewCapture) throw e; console.error('hunt scene failed', e); }
+  if (reviewCapture) setZone('compound');
+  if (reviewCapture) scene.children.slice(firstHuntChild).forEach((root, i) => {
+    root.userData.review ||= { id: `hunt-${root.name || root.type}-${i + 1}`, owner: 'shibuya', sourceRef: 'city/hunt.js#hunt', category: 'Districts' };
+  });
+  if (!reviewCapture) {
+    atmosphere(ctx);
+    try { birds(ctx); } catch (e) { console.error('birds failed', e); }
+  }
   // asphalt between the real buildings (Tokyo back streets have no kerbs), laid around the hand-built districts
   setZone('real_ground');
   for (const { file, ref, rect, ground, frn, site, pave = 'road' } of REAL) {
@@ -517,9 +537,14 @@ export function buildCity({ scene, camera, highways = [] }) {
   expressway(-100, -700, -100, -105); expressway(-500, -700, 300, -700); box('hwy', 30, 2.6, 30, -100, 27, -700);
   rainbowBridge();
   setZone('compound');
-  airships(scene, updates);
-  const pc = propColliders(); if (pc) { scene.add(pc); collidables.push(pc); }
-  if (!OLD_TREES) { const tc = treeColliders(); if (tc) { scene.add(tc); collidables.push(tc); } buildTrees({ scene, camera, updates, dayNight }); }
-  loadProps(scene, camera, updates); console.log('props', propCount());
+  airships(scene, updates, reviewCapture);
+  // Capture reads the authoritative prop/tree placements and requests canonical assets
+  // on demand. Camera-culling pools and invisible collision geometry are game-only.
+  if (!reviewCapture) {
+    const pc = propColliders(); if (pc) { scene.add(pc); collidables.push(pc); }
+    if (!OLD_TREES) { const tc = treeColliders(); if (tc) { scene.add(tc); collidables.push(tc); } buildTrees({ scene, camera, updates, dayNight }); }
+    loadProps(scene, camera, updates);
+  }
+  console.log('props', propCount());
   return { collidables, updates, pois, dayNight, pending };
 }

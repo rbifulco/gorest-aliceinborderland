@@ -55,6 +55,7 @@ export function shibuyaUnderground(ctx, x, y, z, ry = 0) {
   const m = mats();
   return new GLTFLoader().loadAsync('./models/real/shibuya_ubld.glb').then((gltf) => {
     const root = new THREE.Group(); root.name = 'shibuya_ubld'; root.position.set(x, y, z); root.rotation.y = ry;
+    if (ctx.reviewCapture) root.userData.review = { id: 'shibuya-underground', owner: 'shibuya', sourceRef: 'city/ubld.js#shibuyaUnderground', category: 'Interiors' };
     gltf.scene.traverse((o) => {
       if (!o.isMesh) return;
       const type = o.name.replace(/_\d+$/, ''), mat = m[type] || m.IntBuildingInstallation, tile = mat.map?.userData?.tile || 2;

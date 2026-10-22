@@ -36,6 +36,7 @@ export const hash = (a, b, c = 0) => { let h = Math.imul(a | 0, 0x27d4eb2d) ^ Ma
 const pick = (mix, r) => { const tot = mix.reduce((s, m) => s + m[1], 0); let x = r() * tot; for (const [n, w] of mix) if ((x -= w) < 0) return n; return mix[0][0]; };
 
 const P = [];   // placements
+const reviewOrdinals = new Map();
 // record one tree; x, z, y in the current kit frame. opts: { kind, species, row, collide, room }
 export function plantTree(x, z, s = 1, y = 0, opts = {}) {
   const w = K.fpos(x, y, z), seed = hash(Math.round(w.x * 10), Math.round(w.z * 10), 7), r = K.rng(seed);
@@ -54,10 +55,103 @@ export function plantTree(x, z, s = 1, y = 0, opts = {}) {
   const b = .9 + r() * .2, g = 1 + (r() - .5) * .06; let tint = [b, b * g, b * (.94 + r() * .1)];
   const turn = kind === 'street' && sp === 'icho' ? rowR() < .12 : r() < ({ keyaki: .04, sakura: .06, zoki: .06 }[sp] || 0);   // a few crowns turning early
   if (turn) tint = (sp === 'icho' ? [1.45, 1.18, .45] : sp === 'sakura' ? [1.5, .85, .55] : sp === 'zoki' && v ? [1.6, .7, .45] : [1.35, 1, .55]).map((c) => c * b);
+  const key = K.zone + ':' + sp, ordinal = reviewOrdinals.get(key) || 0;
+  reviewOrdinals.set(key, ordinal + 1);
   P.push({ sp, v, x: w.x, y: w.y, z: w.z, yaw: r() * 6.283, size, sx: .88 + r() * .24, sy: .9 + r() * .2, sz: .88 + r() * .24, tint,
-    collide: opts.collide ?? (sp !== 'sapling' && size >= .5), kind, room: opts.room });
+    collide: opts.collide ?? (sp !== 'sapling' && size >= .5), kind, room: opts.room,
+    zone: K.zone, reviewId: opts.reviewId || `tree:${key}:${ordinal}`, sourceRef: opts.sourceRef || 'city/trees.js#plantTree' });
 }
 export function treeStats() { return P.length; }
+
+/* ── capture-only source adapters; no camera pools or ordinary-page callbacks ── */
+// This cache is separate from V: capture inspection must not mutate runtime tree sizes or LODs.
+// It is bounded by the finite SPECIES × VARIANTS set for one capture quality. Teardown releases it.
+const reviewVariants = new Map();
+function reviewVariant(sp, variant) {
+  if (!Object.hasOwn(SPECIES, sp) || !Number.isInteger(variant) || variant < 0 || variant >= VARIANTS)
+    throw new Error(`Unknown tree design ${sp}:${variant}`);
+  const key = `${sp}:${variant}:${LITE}`;
+  if (!reviewVariants.has(key)) reviewVariants.set(key, buildVariant(sp, variant, LITE));
+  return reviewVariants.get(key);
+}
+function treeReviewBounds(vr) {
+  if (vr.reviewBounds) return vr.reviewBounds.clone();
+  const box = new THREE.Box3();
+  for (const geo of [vr.near.wood, vr.near.leaf]) { geo.computeBoundingBox(); box.union(geo.boundingBox); }
+  vr.reviewBounds = box;
+  return box.clone();
+}
+
+// Complete, unclipped source inventory. The same crown-clearance rule as ensure() is applied to
+// copies, so each transform agrees with the website without constructing instancing pools.
+// Explicit opts.reviewId survives reordering; generated per-zone/species ordinals require a new
+// review baseline when that authored placement order changes. Per-placement leaf tint is exposed
+// separately; a shared canonical design intentionally has no individual seasonal tint baked in.
+export function getTreeReviewPlacements() {
+  const Y = new THREE.Vector3(0, 1, 0), q = new THREE.Quaternion(), pos = new THREE.Vector3(), scale = new THREE.Vector3();
+  return P.map((p) => {
+    const vr = reviewVariant(p.sp, p.v), room = p.room ?? ROOM[p.kind] ?? 7.5;
+    const size = Math.min(p.size, room / (Math.max(vr.crown.rx, vr.crown.rz) * Math.max(p.sx, p.sz)));
+    const m = new THREE.Matrix4().compose(pos.set(p.x, p.y, p.z), q.setFromAxisAngle(Y, p.yaw), scale.set(size * p.sx, size * p.sy, size * p.sz));
+    return { ...p, size, tint: [...p.tint], id: p.reviewId, assetId: `tree:${p.sp}:${p.v}`, m,
+      bounds: treeReviewBounds(vr), assetSourceRef: `city/treegen.js#SPECIES.${p.sp}` };
+  });
+}
+
+// "review" preserves the near tree's branching, leaf cards, UVs, vertex colours, bark and leaf
+// maps. Plain standard materials deliberately omit wind, LOD dithering, translucency and custom
+// crown lighting. "scene" is an explicitly approximate source-derived crown + trunk proxy:
+// unlike leaf cards, its silhouette remains useful when the scene serializer drops textures.
+// Returned roots are canonical, in metres with the source origin, never placed in world space.
+export function createTreeReviewAsset(sp, variant, profile = 'review', { signal } = {}) {
+  if (profile !== 'scene' && profile !== 'review') throw new Error('Unknown tree review profile ' + profile);
+  signal?.throwIfAborted();
+  const vr = reviewVariant(sp, variant), root = new THREE.Group(), ownedTextures = new Set();
+  root.name = `${sp}-${variant}`; root.userData.sourceRef = `city/treegen.js#SPECIES.${sp}`;
+  const ownTexture = (source) => { if (!source) return null; const texture = source.clone(); ownedTextures.add(texture); return texture; };
+  const add = (name, geometry, material, sourceRef) => {
+    material.name = `${sp}-${variant}-${name}-material`;
+    const mesh = new THREE.Mesh(geometry, material); mesh.name = name; mesh.userData.sourceRef = sourceRef;
+    root.add(mesh); return mesh;
+  };
+  let disposed = false;
+  const dispose = () => {
+    if (disposed) return; disposed = true;
+    for (const mesh of root.children) { mesh.geometry.dispose(); mesh.material.dispose(); }
+    for (const texture of ownedTextures) texture.dispose();
+    root.clear();
+  };
+  try {
+    if (profile === 'scene') {
+      const h = Math.max(vr.fork, vr.crown.c[1]);
+      const trunk = new THREE.CylinderGeometry(vr.r0 * .55, vr.r0, h, 7); trunk.translate(0, h / 2, 0);
+      // Component/material names are identity inputs in the SDK. Keep them
+      // stable when an overview is replaced by detail; tags describe the proxy.
+      add('Wood', trunk, new THREE.MeshStandardMaterial({ color: 0x514334, roughness: .92 }), 'city/treegen.js#buildVariant');
+      const crown = buildBlob(LITE);
+      crown.scale(vr.crown.rx, vr.crown.ry, vr.crown.rz); crown.translate(...vr.crown.c);
+      const mean = leafMean(sp === 'zoki' ? (variant ? 'maple' : 'oak') : sp);
+      const colour = new THREE.Color().setRGB(...mean, THREE.SRGBColorSpace);
+      add('Leaves', crown, new THREE.MeshStandardMaterial({ color: colour, vertexColors: true, roughness: .95 }), 'city/treegen.js#buildBlob');
+    } else {
+      const bark = barkTex(SPECIES[sp].bark, LITE);
+      add('Wood', vr.near.wood.clone(), new THREE.MeshStandardMaterial({ map: ownTexture(bark.map), normalMap: ownTexture(bark.normal), vertexColors: true, roughness: .92 }), 'city/treegen.js#buildVariant');
+      const leaves = vr.near.leaf.clone(); leaves.deleteAttribute('aCrown');
+      add('Leaves', leaves, new THREE.MeshStandardMaterial({ map: ownTexture(leafAtlas(LITE)), alphaTest: .5, side: THREE.DoubleSide, vertexColors: true, roughness: .72 }), 'city/treegen.js#buildVariant');
+    }
+    signal?.throwIfAborted();
+    root.updateMatrixWorld(true);
+    return { root, dispose, bounds: new THREE.Box3().setFromObject(root), canonicalBounds: treeReviewBounds(vr),
+      approximation: profile === 'scene' ? 'Source-derived crown and trunk composition proxy' : 'Standard lighting; no wind, dither, translucency or per-placement tint' };
+  } catch (error) { dispose(); throw error; }
+}
+
+// Only the capture adapter cache is released. Runtime V, M, and treetex's shared source canvases
+// remain owned by their original modules; request-owned clones are released by each disposer.
+export function disposeTreeReviewCache() {
+  for (const vr of reviewVariants.values()) for (const tier of ['near', 'mid']) for (const geometry of Object.values(vr[tier])) geometry.dispose();
+  reviewVariants.clear();
+}
 
 /* ── species variants, built once; crowns then shrunk to fit their room ── */
 let V = null;   // V[sp][v] = buildVariant output

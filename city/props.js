@@ -72,6 +72,7 @@ export const PROPS = {
 };
 
 const placements = new Map();   // name → [{ m: Matrix4 (world), p: Vector3 }]
+const reviewOrdinals = new Map();   // authored zone + design → placement ordinal (never a camera/LOD index)
 const _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _p = new THREE.Vector3(), _e = new THREE.Euler();
 
 // x,y,z in the current kit frame; ry turns local +x (the model's forward) toward the desired heading
@@ -80,7 +81,10 @@ export function prop(name, x, y, z, ry = 0, scale = 1, tilt = 0, opt = {}) {
   if (!PROPS[name]) throw new Error('unknown prop ' + name);
   const m = K.frame.clone().multiply(new THREE.Matrix4().compose(_p.set(x, y, z), _q.setFromEuler(_e.set(tilt, ry, opt.rz || 0, 'YXZ')), _s.setScalar(scale)));
   if (!placements.has(name)) placements.set(name, []);
-  placements.get(name).push({ m, p: new THREE.Vector3().setFromMatrixPosition(m), collide: !!opt.collide });
+  const key = K.zone + ':' + name, ordinal = reviewOrdinals.get(key) || 0;
+  reviewOrdinals.set(key, ordinal + 1);
+  placements.get(name).push({ m, p: new THREE.Vector3().setFromMatrixPosition(m), collide: !!opt.collide,
+    zone: K.zone, reviewId: opt.reviewId || `prop:${key}:${ordinal}`, sourceRef: opt.sourceRef || 'city/props.js#prop' });
 }
 // world placements of the given prop names within r of (x, z) — used to stage people behind cars etc.
 export function placementsNear(names, x, z, r) {
@@ -89,6 +93,17 @@ export function placementsNear(names, x, z, r) {
   return out;
 }
 export const propCount = () => [...placements.values()].reduce((a, l) => a + l.length, 0);
+
+// The capture document reads the complete source inventory, before camera-distance culling.
+// Callers own the returned transforms; editing them cannot move the ordinary scene. An explicit
+// opt.reviewId survives reordering; generated ordinals require a new review baseline if that
+// zone/design's authored placement order is changed.
+export function getPropReviewPlacements() {
+  return [...placements].flatMap(([name, list]) => list.map((it) => ({
+    ...it, id: it.reviewId, name, m: it.m.clone(), p: it.p.clone(),
+    assetId: `prop:${name}`, assetSourceRef: `city/props.js#PROPS.${name}`,
+  })));
+}
 
 // invisible collision boxes for every placement (one merged mesh) — call before building the player collider
 export function propColliders() {
@@ -124,6 +139,65 @@ function normalise(gltf, spec) {
     g.scale(k, k, k);
   }
   return parts;
+}
+
+// A deferred canonical representation uses precisely the same normalisation as loadProps().
+// The root is in metres, with its base at y=0 and its longest horizontal axis along +x.
+// No placement is baked into it. The returned disposer owns this request's geometry, materials,
+// textures and decoded images; retain it until the bridge's texture delivery grace has ended.
+export async function loadPropReviewAsset(name, { signal } = {}) {
+  if (!Object.hasOwn(PROPS, name)) throw new Error('unknown prop ' + name);
+  signal?.throwIfAborted();
+  const url = new URL(`../models/props/lod/${name}.glb`, import.meta.url);
+  const response = await fetch(url, { signal, credentials: 'omit' });
+  if (!response.ok) throw new Error(`Prop ${name}: ${response.status} ${url.pathname}`);
+  const bytes = await response.arrayBuffer();
+  signal?.throwIfAborted();
+  const gltf = await new GLTFLoader().parseAsync(bytes, new URL('./', url).href);
+  const originalGeometries = new Set(), materials = new Set(), textures = new Set(), images = new Set();
+  gltf.scene.traverse((o) => {
+    if (!o.isMesh) return;
+    originalGeometries.add(o.geometry);
+    for (const mat of Array.isArray(o.material) ? o.material : [o.material]) {
+      materials.add(mat);
+      for (const value of Object.values(mat)) if (value?.isTexture) {
+        textures.add(value);
+        if (value.image?.close) images.add(value.image);
+      }
+    }
+  });
+  const root = new THREE.Group(); root.name = name;
+  root.userData.sourceRef = `city/props.js#PROPS.${name}`;
+  const geometries = new Set(); let disposed = false;
+  const dispose = () => {
+    if (disposed) return; disposed = true;
+    for (const g of originalGeometries) g.dispose();
+    for (const g of geometries) g.dispose();
+    for (const mat of materials) mat.dispose();
+    for (const tex of textures) tex.dispose();
+    for (const image of images) image.close();
+    root.clear();
+  };
+  try {
+    signal?.throwIfAborted();
+    normalise(gltf, PROPS[name]).forEach(({ g, mat }, i) => {
+      geometries.add(g);
+      const mesh = new THREE.Mesh(g, mat); mesh.name = `${name}-part-${i + 1}`;
+      mesh.userData.sourceRef = 'city/props.js#normalise';
+      root.add(mesh);
+    });
+    let materialIndex = 0;
+    for (const mat of materials) {
+      mat.side = THREE.FrontSide;
+      mat.name = `${name}-material-${++materialIndex}`;
+    }
+    for (const g of originalGeometries) g.dispose();
+    originalGeometries.clear();
+    root.updateMatrixWorld(true);
+    return { root, dispose, bounds: new THREE.Box3().setFromObject(root), byteLength: bytes.byteLength };
+  } catch (error) {
+    dispose(); throw error;
+  }
 }
 
 export function loadProps(scene, camera, updates) {

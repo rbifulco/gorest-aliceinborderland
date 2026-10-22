@@ -65,6 +65,7 @@ export function build(ctx, d) {
   const water = scene.children.find((o) => o.isMesh && o.geometry?.parameters?.width === 9000);
   if (water) {
     const m = water.material, x0 = d.x + PX0 - .5, x1 = d.x + PX1 + .5, z0 = d.z - PZ - .5, z1 = d.z + PZ + .5;
+    if (ctx.reviewCapture) (water.userData.reviewWaterHoles ||= []).push([x0, z0, x1, z1].map((value) => Number(value.toFixed(1))));
     const prev = m.onBeforeCompile.bind(m), prevKey = m.customProgramCacheKey.bind(m);
     m.onBeforeCompile = (sh, r) => {
       prev(sh, r);

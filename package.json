@@ -4,13 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "npm run prepare:review && python3 tools/serve.py 8765 . 127.0.0.1",
+    "prepare:review": "node tools/prepare-review.mjs",
+    "test": "bash tools/check.sh",
+    "build": "npm run prepare:review && node tools/build.mjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@alterno-dev/spatial-review": "0.7.0",
     "three": "^0.170.0",
     "three-mesh-bvh": "^0.8.3"
   }
