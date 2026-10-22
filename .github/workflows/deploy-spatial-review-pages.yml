@@ -81,3 +81,25 @@ jobs:
       - name: Deploy to Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Verify public website, discovery and representative assets
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          set -euo pipefail
+          SITE="${PAGE_URL%/}"
+          echo "Checking ${SITE}/"
+          # Pages CDN propagation can lag successful deployment.
+          for attempt in $(seq 1 12); do
+            if curl --fail --location --silent --show-error --max-time 20 "${SITE}/" -o /tmp/site-index.html &&
+               curl --fail --location --silent --show-error --max-time 20 "${SITE}/.well-known/spatial-review.json" -o /tmp/discovery.json; then
+              break
+            fi
+            if [ "$attempt" -eq 12 ]; then exit 1; fi
+            sleep 10
+          done
+          node -e "const d=require('/tmp/discovery.json'); if(d.schema !== 'spatial-review-discovery/v1' || d.liveCapture !== '../spatial-review.html') process.exit(1)"
+          for path in spatial-review.html spatial-review/capture.js models/real/shibuya_bldg.glb models/props/lod/jp_taxi.glb cards/QH.webp; do
+            curl --fail --location --silent --show-error --max-time 30 --head "${SITE}/${path}" > /dev/null
+          done
+          echo "Published website, discovery and representative assets verified."
