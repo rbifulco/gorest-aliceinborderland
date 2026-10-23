@@ -45,8 +45,8 @@ bytes remain subject to SDK origin and peer checks.
 
 | Item | Value |
 | --- | --- |
-| SDK | Released npm package `@alterno-dev/spatial-review`, pinned to `0.7.0` |
-| Protocol | Resolved by the SDK's exact `0.7.0` dependency |
+| SDK | Released npm package `@alterno-dev/spatial-review`, pinned to `0.8.0` |
+| Protocol | Resolved by the SDK's exact `0.8.0` dependency |
 | Three.js | Existing `0.170.0` retained; compatible with SDK peer range `>=0.160.0 <1` |
 | Package installation | `npm ci` from the committed lockfile |
 | Development server | `npm run dev`, serving with `python tools/serve.py 8765` |
@@ -58,7 +58,7 @@ bytes remain subject to SDK origin and peer checks.
 | Static build | `npm run build`, writing the complete runnable site to `dist/` |
 
 The review URL above is the result of
-`spatialReviewEditorUrl('http://localhost:8765/')` from SDK 0.7.0. The capture
+`spatialReviewEditorUrl('http://localhost:8765/')` from SDK 0.8.0. The capture
 document generates its own link for the address actually in use. `localhost`
 and `127.0.0.1` are different origins; use one consistently within a workflow.
 
