@@ -8,7 +8,7 @@ and its linked structure, transport, navigation, and performance references.
 **Record date:** 2026-10-22. **Source baseline:**
 `25b9b98ed2f59a7061ecd31cc8682f0150e0b252`.
 
-**Acceptance status:** implementation and capture/transport checks are complete.
+**Historical installation acceptance (22 October):** implementation and capture/transport checks are complete.
 Full hosted-editor UI acceptance remains **blocked during preparation in the
 software-rendered test environment**. The editor received the final catalog and
 successful asset responses but did not open. The unverified checks are listed
@@ -45,8 +45,8 @@ bytes remain subject to SDK origin and peer checks.
 
 | Item | Value |
 | --- | --- |
-| SDK | Released npm package `@alterno-dev/spatial-review`, pinned to `0.8.0` |
-| Protocol | Resolved by the SDK's exact `0.8.0` dependency |
+| SDK | Released npm package `@alterno-dev/spatial-review`, pinned to `0.9.0` |
+| Protocol | Resolved by the SDK's exact `0.9.0` dependency |
 | Three.js | Existing `0.170.0` retained; compatible with SDK peer range `>=0.160.0 <1` |
 | Package installation | `npm ci` from the committed lockfile |
 | Development server | `npm run dev`, serving with `python tools/serve.py 8765` |
@@ -58,7 +58,7 @@ bytes remain subject to SDK origin and peer checks.
 | Static build | `npm run build`, writing the complete runnable site to `dist/` |
 
 The review URL above is the result of
-`spatialReviewEditorUrl('http://localhost:8765/')` from SDK 0.8.0. The capture
+`spatialReviewEditorUrl('http://localhost:8765/')` from SDK 0.9.0. The capture
 document generates its own link for the address actually in use. `localhost`
 and `127.0.0.1` are different origins; use one consistently within a workflow.
 
@@ -235,40 +235,34 @@ contains the intended result. Preserve unresolved annotations across refresh.
 | Procedural facade appearance | `kit.js#parallaxFacade`; `city/index.js#facade`; `city/buildings.js` | Retain supported base/normal/roughness/emissive maps; parallax and interior shader injection are approximate |
 | Imported prop/truck models | GLB material definitions; `city/props.js#normalise`; model path | Retain material/component structure and decoded images supported by the SDK |
 | PLATEAU replacement materials | `city/realbldg.js`; `city/takeshiba.js`; `city/ubld.js` | Retain supported replacement PBR materials and generated maps |
-| Trees | `city/trees.js`; `city/treetex.js`; `city/treegen.js` | Detail preserves branching, leaf-card geometry, bark/leaf maps and an alpha mask. Vertex colors become a mean material tint; per-placement seasonal tint, wind, crown shading, dithering, translucency and custom shadows are omitted |
+| Trees | `city/trees.js`; `city/treetex.js`; `city/treegen.js` | Detail preserves branching, leaf-card geometry, bark/leaf maps and an alpha mask. Visible RGB/RGBA vertex colors remain spatially varying; per-placement seasonal tint, wind, crown shading, dithering, translucency and custom shadows are omitted |
 | Card paintings | `city/cards.js#paintedMap`; `cards/` | Stable credential-free direct image URL where available; live decoded-image fallback |
 | Water, reflections, fog, grading, bloom, AO, DOF, shafts | `main.js`; `city/sky.js`; `city/hfog.js`; `city/grade.js`; `city/godrays.js`; `spatial-review/water.js` | Static standard-material water retains supported appearance and baked venue openings; shader-only effects, additive fog/light pools and reflection surfaces are excluded, and renderer effects are not reproduced |
 
-The SDK's `scene` serialization profile omits texture maps, supplied normals,
-and UVs. The capture's `overview` representation is position/index-only under
-both request profiles, because the official editor also eagerly requests
-overviews through the `review` profile. Identical Float32 positions can share
-a vertex index without moving any triangle or changing material groups,
-component transforms or draw order. Overview normal reconstruction can smooth
-formerly separate face corners; this is an appearance approximation.
+SDK 0.9.0 retains visible RGB/RGBA vertex colors, UVs and supported texture maps
+in both Scene and Asset exports. The scene profile omits supplied normals.
+Overview geometry with UV/color attributes uses a cached BufferGeometry wrapper
+that shares source attribute/index buffers while preserving old geometry IDs and seams;
+position-only surfaces can still use the established welding optimization.
+The existing tree overview remains a declared crown/trunk composition proxy,
+with source vertex tint; the detailed tree retains bark and leaf maps.
 
-Distinct base colors and alpha-weighted mean map colors support composition
-review. The `detail` representation retains supported material maps, UVs,
-normals, component hierarchy and geometry groups for Asset feedback. A missing effect that could
-change the review decision makes that appearance review unsuitable until
-another representation is supplied; do not label it faithful by default.
+Both prop profiles reuse one canonical GLB source per asset for the capture
+lifetime. Repeated placement groups keep sharing that geometry and its textures.
+Material copies preserve the original vertexColors opt-in; custom shader
+attributes do not enable RGB shading by their mere presence. The inspected tree
+RGB is visible color. Wind, dither, crown lighting, seasonal instance tint,
+water/reflection effects and facade parallax remain documented approximations.
 
 The SDK also omits `emissiveIntensity`. The adapter multiplies each cloned
 emissive color by the source's sampled intensity before serialization, so
 surfaces with emission switched off remain dark. The protocol's color fields
 do not preserve the source renderer's HDR glow or bloom.
 
-SDK 0.7.0 omits geometry vertex-color attributes, `vertexColors`, `alphaTest`,
-and the source material's `transparent` flag. The capture adapter compensates
-within the supported material schema. It multiplies the source material color
-by the mean vertex color of that geometry/material group. This retains broad
-wood/leaf tint but loses spatial color variation. In the scene profile, the
-alpha-weighted mean base-map color supplies an additional composition tint.
-
-In detail, the adapter retains the original base map. An owned alpha map makes
-the SDK enable transparency for RGBA materials; cutout materials also receive
-a threshold mask derived from the original base-map alpha. A white mask enables
-ordinary source alpha blending without multiplying the map's alpha twice.
+The 0.9 adapter removes the older mean-vertex and mean-map tint workarounds.
+It preserves original maps and the material transparent flag in both profiles.
+The SDK still omits alphaTest: cutouts retain the existing source-derived
+threshold alpha-map approximation; ordinary RGBA blending retains its white mask.
 The editor uses transparency rather than the source renderer's alpha-test
 pipeline, so edge blending and depth ordering remain approximations. Existing
 source alpha maps remain intact. Live transfer and decoding passed the focused browser check, and the generated
@@ -541,3 +535,65 @@ was not altered. The remaining acceptance step is to run this branch in a
 browser with hardware acceleration and complete those interactions, resolving
 any preparation performance issue found there before calling the installation
 fully accepted. No production deployment or hosting change was performed.
+
+
+## SDK 0.9.0 upgrade — 24 October 2026
+
+The owner explicitly requested this update and publication through the existing
+GitHub Pages workflow. Source remains `feat/spatial-review`; its successful
+`Spatial Review build` triggers the default branch's existing deployment workflow.
+The published website is https://rbifulco.github.io/gorest-aliceinborderland/;
+the capture is `spatial-review.html`, with unchanged static discovery and origin
+approval. No game route, live source renderer, runtime controls or ordinary-page
+imports changed. The ordinary-page performance screen is not triggered: all
+modified code is capture-only and dependency copies are used only by capture.
+
+Npm pins SDK and transitive protocol at 0.9.0; Three.js remains 0.170.0. There are
+no directly declared validator/CLI packages. `package-lock.json` is committed.
+`prepare:review` regenerated all 111 model descriptors (59 canonical prop
+metrics) with UV/color float sizes and a dependency-inclusive build identity:
+`gorest-8d3e96fec3f11f54d0c8d42f`. Existing actor, asset, component, material and
+assembly naming/order are retained; build and representation revisions change.
+There are no prepared review packages to migrate.
+
+### Local verification and cost
+
+- Before and after: `npm test` (the repository's complete syntax suite) and
+  production `npm run build` pass. The final build uses
+  `SPATIAL_REVIEW_BASE_PATH=/gorest-aliceinborderland` and retains `.well-known`,
+  `.nojekyll`, model and card assets.
+- Real capture: 4,497 actors, 920 asset families, 194 assemblies, all 13,493 prop
+  and 3,720 tree placements, and 18 authored journeys. Capture had no warnings
+  or page errors. One software-browser bootstrap took 42.516 seconds; this is
+  an observation under shared test-host load, not a hardware performance claim.
+- Aggregate navigation: 36 stops, 18 segments, 68 native point occurrences plus
+  50 sampled occurrences (118 camera/aim points total), counted recursively
+  across all serialized sequences including baseline/extension fields.
+- A cross-origin peer starting from the ordinary URL discovered the capture,
+  received the catalog and requested `prop:jp_taxi` and `tree:keyaki:0` in
+  Scene/overview and Asset/detail profiles. Every requested map decoded.
+- The taxi has 4,360 unique vertices: 105,200 geometry bytes in Scene and
+  157,520 in Asset, including 34,880 UV bytes in each. Its three unique image
+  resources are shared between profiles and across placements: 2,639,870 PNG
+  transfer bytes; 6,291,456 bytes for decoded RGBA8 image storage; approximately
+  8,388,610 bytes for full RGBA8 GPU mip chains. These are separate costs, and
+  the GPU figure is a format-based estimate, not measured driver allocation.
+- Keyaki detail has 1,452 vertices, 71,676 geometry bytes, 17,424 RGB bytes and
+  11,616 UV bytes. The established crown/trunk overview has 88 vertices and
+  2,576 geometry bytes, including 504 RGB bytes. Four detail texture resources
+  transfer 740,999 PNG bytes and decode to 4,456,448 RGBA8 bytes; full mip-chain
+  storage is approximately 5,941,932 bytes. Do not multiply these shared-design
+  costs by placement count or extrapolate them to the whole city.
+- An actual-adapter browser fixture verified normalized RGBA values, Scene and
+  Asset UV/maps, source vertexColors true/false flags, shared geometry/textures,
+  and disposal without mutating source resources. The old and updated adapters
+  were also compared using the actual taxi and keyaki source factories: all
+  node, material and geometry IDs match in both profiles, including unnamed
+  primitive geometries. Attribute buffers remain shared.
+
+The official editor discovered the ordinary local website and began preparation.
+Its UI became unresponsive while preparing this large catalog in SwiftShader;
+interactive Scene/Asset/Experience acceptance and feedback export were not
+completed locally. This is consistent with the historical preparation limit
+above, and is not reported as a passing editor view check. Deployment and hosted
+editor results must be assessed separately from these producer checks.

@@ -1,0 +1,383 @@
+{
+  "buildId": "gorest-8d3e96fec3f11f54d0c8d42f",
+  "actors": 4497,
+  "assets": 920,
+  "subjects": [
+    {
+      "id": "prop:jp_taxi",
+      "profiles": [
+        {
+          "profile": "scene",
+          "representation": "overview",
+          "vertices": 4360,
+          "geometryBytes": 105200,
+          "colorBytes": 0,
+          "uvBytes": 34880,
+          "geometries": 1,
+          "nodes": 3,
+          "materials": [
+            {
+              "id": "prop:jp_taxi-material-jp-taxi-material-1-1",
+              "vertexColors": false,
+              "mapSlots": [
+                "map",
+                "normalMap",
+                "roughnessMap",
+                "metalnessMap"
+              ],
+              "resourceIds": [
+                "three-texture:66fb7056-06d4-428f-809c-13ea9cbc712e",
+                "three-texture:ccdf4cd6-9f15-4e5f-8d13-3fa1cec273b2",
+                "three-texture:350b87a7-0873-48c2-b268-bac70c75c5c7",
+                "three-texture:350b87a7-0873-48c2-b268-bac70c75c5c7"
+              ]
+            }
+          ],
+          "sourceRef": "city/index.js#buildCity;city/props.js#prop;city/props.js#PROPS.jp_taxi;placement:prop:city_0_0:jp_taxi:0"
+        },
+        {
+          "profile": "review",
+          "representation": "detail",
+          "vertices": 4360,
+          "geometryBytes": 157520,
+          "colorBytes": 0,
+          "uvBytes": 34880,
+          "geometries": 1,
+          "nodes": 3,
+          "materials": [
+            {
+              "id": "prop:jp_taxi-material-jp-taxi-material-1-1",
+              "vertexColors": false,
+              "mapSlots": [
+                "map",
+                "normalMap",
+                "roughnessMap",
+                "metalnessMap"
+              ],
+              "resourceIds": [
+                "three-texture:66fb7056-06d4-428f-809c-13ea9cbc712e",
+                "three-texture:ccdf4cd6-9f15-4e5f-8d13-3fa1cec273b2",
+                "three-texture:350b87a7-0873-48c2-b268-bac70c75c5c7",
+                "three-texture:350b87a7-0873-48c2-b268-bac70c75c5c7"
+              ]
+            }
+          ],
+          "sourceRef": "city/index.js#buildCity;city/props.js#prop;city/props.js#PROPS.jp_taxi;placement:prop:city_0_0:jp_taxi:0"
+        }
+      ],
+      "textures": [
+        {
+          "slot": "map",
+          "materialId": "prop:jp_taxi-material-jp-taxi-material-1-1",
+          "mime": "image/png",
+          "transferBytes": 1926909,
+          "width": 1024,
+          "height": 1024,
+          "decodedRGBABytes": 4194304,
+          "estimatedGPUMipBytes": 5592406
+        },
+        {
+          "slot": "normalMap",
+          "materialId": "prop:jp_taxi-material-jp-taxi-material-1-1",
+          "mime": "image/png",
+          "transferBytes": 131953,
+          "width": 512,
+          "height": 512,
+          "decodedRGBABytes": 1048576,
+          "estimatedGPUMipBytes": 1398102
+        },
+        {
+          "slot": "metalnessMap",
+          "materialId": "prop:jp_taxi-material-jp-taxi-material-1-1",
+          "mime": "image/png",
+          "transferBytes": 581008,
+          "width": 512,
+          "height": 512,
+          "decodedRGBABytes": 1048576,
+          "estimatedGPUMipBytes": 1398102
+        }
+      ]
+    },
+    {
+      "id": "tree:keyaki:0",
+      "profiles": [
+        {
+          "profile": "scene",
+          "representation": "overview",
+          "vertices": 88,
+          "geometryBytes": 2576,
+          "colorBytes": 504,
+          "uvBytes": 368,
+          "geometries": 2,
+          "nodes": 4,
+          "materials": [
+            {
+              "id": "tree:keyaki:0-material-keyaki-0-wood-material-1",
+              "vertexColors": false,
+              "mapSlots": [],
+              "resourceIds": []
+            },
+            {
+              "id": "tree:keyaki:0-material-keyaki-0-leaves-material-2",
+              "vertexColors": true,
+              "mapSlots": [],
+              "resourceIds": []
+            }
+          ],
+          "sourceRef": "city/arena.js#build;city/trees.js#plantTree;city/treegen.js#SPECIES.keyaki;placement:tree:arena:keyaki:0"
+        },
+        {
+          "profile": "review",
+          "representation": "detail",
+          "vertices": 1452,
+          "geometryBytes": 71676,
+          "colorBytes": 17424,
+          "uvBytes": 11616,
+          "geometries": 2,
+          "nodes": 4,
+          "materials": [
+            {
+              "id": "tree:keyaki:0-material-keyaki-0-wood-material-1",
+              "vertexColors": true,
+              "mapSlots": [
+                "map",
+                "normalMap"
+              ],
+              "resourceIds": [
+                "three-texture:504eed8c-6698-4dc2-993b-83ff2db557c5",
+                "three-texture:35956af6-9e6e-4adc-b20f-5e4c4b7428c7"
+              ]
+            },
+            {
+              "id": "tree:keyaki:0-material-keyaki-0-leaves-material-2",
+              "vertexColors": true,
+              "mapSlots": [
+                "map",
+                "alphaMap"
+              ],
+              "resourceIds": [
+                "three-texture:224f629a-695e-4920-97ff-be5b321cb8ed",
+                "three-texture:123cc4e7-07b1-4d2a-8def-72c6a44dab38"
+              ]
+            }
+          ],
+          "sourceRef": "city/arena.js#build;city/trees.js#plantTree;city/treegen.js#SPECIES.keyaki;placement:tree:arena:keyaki:0"
+        }
+      ],
+      "textures": [
+        {
+          "slot": "map",
+          "materialId": "tree:keyaki:0-material-keyaki-0-wood-material-1",
+          "mime": "image/png",
+          "transferBytes": 52773,
+          "width": 128,
+          "height": 256,
+          "decodedRGBABytes": 131072,
+          "estimatedGPUMipBytes": 174763
+        },
+        {
+          "slot": "normalMap",
+          "materialId": "tree:keyaki:0-material-keyaki-0-wood-material-1",
+          "mime": "image/png",
+          "transferBytes": 94981,
+          "width": 128,
+          "height": 256,
+          "decodedRGBABytes": 131072,
+          "estimatedGPUMipBytes": 174763
+        },
+        {
+          "slot": "map",
+          "materialId": "tree:keyaki:0-material-keyaki-0-leaves-material-2",
+          "mime": "image/png",
+          "transferBytes": 524085,
+          "width": 1024,
+          "height": 512,
+          "decodedRGBABytes": 2097152,
+          "estimatedGPUMipBytes": 2796203
+        },
+        {
+          "slot": "alphaMap",
+          "materialId": "tree:keyaki:0-material-keyaki-0-leaves-material-2",
+          "mime": "image/png",
+          "transferBytes": 69160,
+          "width": 1024,
+          "height": 512,
+          "decodedRGBABytes": 2097152,
+          "estimatedGPUMipBytes": 2796203
+        }
+      ]
+    }
+  ],
+  "sdk": "0.9.0",
+  "protocol": "0.9.0",
+  "three": "0.170.0",
+  "sourceBranch": "feat/spatial-review",
+  "checks": {
+    "beforeTests": "pass",
+    "beforeBuild": "pass",
+    "afterTests": "pass",
+    "afterBuild": "pass",
+    "adapterAppearance": "pass",
+    "officialEditorLocal": "discovered; UI preparation did not finish"
+  },
+  "navigation": {
+    "sequences": 18,
+    "stops": 36,
+    "segments": 18,
+    "points": 68,
+    "samples": 50
+  },
+  "identityChecks": {
+    "result": "PASS",
+    "checks": [
+      {
+        "id": "prop:jp_taxi",
+        "profile": "scene",
+        "before": {
+          "nodes": [
+            "prop:jp_taxi-root",
+            "prop:jp_taxi-jp-taxi-1",
+            "prop:jp_taxi-jp-taxi-part-1-1-1"
+          ],
+          "materials": [
+            "prop:jp_taxi-material-jp-taxi-material-1-1"
+          ],
+          "geometries": [
+            "prop:jp_taxi-geometry-buffergeometry-1"
+          ]
+        },
+        "after": {
+          "nodes": [
+            "prop:jp_taxi-root",
+            "prop:jp_taxi-jp-taxi-1",
+            "prop:jp_taxi-jp-taxi-part-1-1-1"
+          ],
+          "materials": [
+            "prop:jp_taxi-material-jp-taxi-material-1-1"
+          ],
+          "geometries": [
+            "prop:jp_taxi-geometry-buffergeometry-1"
+          ]
+        },
+        "sharedAttributeBuffers": true,
+        "colors": 0,
+        "uvs": 8720,
+        "maps": 4
+      },
+      {
+        "id": "prop:jp_taxi",
+        "profile": "review",
+        "before": {
+          "nodes": [
+            "prop:jp_taxi-root",
+            "prop:jp_taxi-jp-taxi-1",
+            "prop:jp_taxi-jp-taxi-part-1-1-1"
+          ],
+          "materials": [
+            "prop:jp_taxi-material-jp-taxi-material-1-1"
+          ],
+          "geometries": [
+            "prop:jp_taxi-geometry-buffergeometry-1"
+          ]
+        },
+        "after": {
+          "nodes": [
+            "prop:jp_taxi-root",
+            "prop:jp_taxi-jp-taxi-1",
+            "prop:jp_taxi-jp-taxi-part-1-1-1"
+          ],
+          "materials": [
+            "prop:jp_taxi-material-jp-taxi-material-1-1"
+          ],
+          "geometries": [
+            "prop:jp_taxi-geometry-buffergeometry-1"
+          ]
+        },
+        "sharedAttributeBuffers": true,
+        "colors": 0,
+        "uvs": 8720,
+        "maps": 4
+      },
+      {
+        "id": "tree:keyaki:0",
+        "profile": "scene",
+        "before": {
+          "nodes": [
+            "tree:keyaki:0-root",
+            "tree:keyaki:0-keyaki-0-1",
+            "tree:keyaki:0-wood-1-1",
+            "tree:keyaki:0-leaves-1-2"
+          ],
+          "materials": [
+            "tree:keyaki:0-material-keyaki-0-wood-material-1",
+            "tree:keyaki:0-material-keyaki-0-leaves-material-2"
+          ],
+          "geometries": [
+            "tree:keyaki:0-geometry-buffergeometry-1",
+            "tree:keyaki:0-geometry-buffergeometry-2"
+          ]
+        },
+        "after": {
+          "nodes": [
+            "tree:keyaki:0-root",
+            "tree:keyaki:0-keyaki-0-1",
+            "tree:keyaki:0-wood-1-1",
+            "tree:keyaki:0-leaves-1-2"
+          ],
+          "materials": [
+            "tree:keyaki:0-material-keyaki-0-wood-material-1",
+            "tree:keyaki:0-material-keyaki-0-leaves-material-2"
+          ],
+          "geometries": [
+            "tree:keyaki:0-geometry-buffergeometry-1",
+            "tree:keyaki:0-geometry-buffergeometry-2"
+          ]
+        },
+        "sharedAttributeBuffers": true,
+        "colors": 126,
+        "uvs": 92,
+        "maps": 0
+      },
+      {
+        "id": "tree:keyaki:0",
+        "profile": "review",
+        "before": {
+          "nodes": [
+            "tree:keyaki:0-root",
+            "tree:keyaki:0-keyaki-0-1",
+            "tree:keyaki:0-wood-1-1",
+            "tree:keyaki:0-leaves-1-2"
+          ],
+          "materials": [
+            "tree:keyaki:0-material-keyaki-0-wood-material-1",
+            "tree:keyaki:0-material-keyaki-0-leaves-material-2"
+          ],
+          "geometries": [
+            "tree:keyaki:0-geometry-buffergeometry-1",
+            "tree:keyaki:0-geometry-buffergeometry-2"
+          ]
+        },
+        "after": {
+          "nodes": [
+            "tree:keyaki:0-root",
+            "tree:keyaki:0-keyaki-0-1",
+            "tree:keyaki:0-wood-1-1",
+            "tree:keyaki:0-leaves-1-2"
+          ],
+          "materials": [
+            "tree:keyaki:0-material-keyaki-0-wood-material-1",
+            "tree:keyaki:0-material-keyaki-0-leaves-material-2"
+          ],
+          "geometries": [
+            "tree:keyaki:0-geometry-buffergeometry-1",
+            "tree:keyaki:0-geometry-buffergeometry-2"
+          ]
+        },
+        "sharedAttributeBuffers": true,
+        "colors": 4356,
+        "uvs": 2904,
+        "maps": 4
+      }
+    ]
+  }
+}

@@ -88,7 +88,7 @@ function modelMetrics(bytes, file) {
       },
     };
   }
-  const bounds = new Box3(), point = new Vector3();
+  const bounds = new Box3(), point = new Vector3(), attributes = new Set(['position']);
   let triangles = 0, vertices = 0, meshes = 0, sceneBytes = 0, reviewBytes = 0;
   const visit = (index, parent, ancestry = new Set()) => {
     if (ancestry.has(index)) throw new Error(`Cyclic GLB node hierarchy: ${file}`);
@@ -113,9 +113,12 @@ function modelMetrics(bytes, file) {
       const indexBytes = indexCount * (positions.count <= 65535 ? 2 : 4);
       sceneBytes += positions.count * 12 + indexBytes;
       reviewBytes += positions.count * 12 + indexBytes;
-      for (const attribute of ['NORMAL', 'TEXCOORD_0']) if (primitive.attributes[attribute] !== undefined) {
+      for (const attribute of ['NORMAL', 'TEXCOORD_0', 'COLOR_0']) if (primitive.attributes[attribute] !== undefined) {
         const a = gltf.accessors[primitive.attributes[attribute]];
-        reviewBytes += a.count * components[a.type] * 4;
+        const size = a.count * components[a.type] * 4;
+        reviewBytes += size;
+        if (attribute !== 'NORMAL') sceneBytes += size;
+        attributes.add({ NORMAL: 'normal', TEXCOORD_0: 'uv', COLOR_0: 'color' }[attribute]);
       }
       triangles += triangleCount; vertices += positions.count; meshes++;
     }
@@ -127,7 +130,7 @@ function modelMetrics(bytes, file) {
   for (const index of roots) visit(index, new Matrix4());
   if (bounds.isEmpty()) throw new Error(`No triangle geometry in ${file}`);
   return { bounds: { center: bounds.getCenter(new Vector3()).toArray(), size: bounds.getSize(new Vector3()).toArray() },
-    triangles, vertices, meshes, estimatedBytes: reviewBytes, sceneBytes, fileBytes: bytes.length };
+    triangles, vertices, meshes, estimatedBytes: reviewBytes, sceneBytes, fileBytes: bytes.length, attributes: [...attributes] };
 }
 
 const hash = createHash('sha256'), models = {};

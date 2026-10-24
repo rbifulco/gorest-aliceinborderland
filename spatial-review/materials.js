@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { createOverviewGeometryCache } from './overview.js';
 
 const textureSlots = ['map', 'normalMap', 'bumpMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap', 'alphaMap'];
-const meanColors = new WeakMap(), vertexMeans = new WeakMap();
 const materialsOf = (object) => Array.isArray(object.material) ? object.material : object.material ? [object.material] : [];
 const hasPose = (object) => object.isSkinnedMesh || object.morphTargetInfluences?.some((weight) => weight !== 0);
 
@@ -29,7 +28,7 @@ export function traverseReview(root, visitor) {
 
 /** World bounds and conservative stream costs without cloning geometry or constructing materials. */
 export function measureReviewRoot(root) {
-  const box = new THREE.Box3(), seen = new Set(), materialSet = new Set();
+  const box = new THREE.Box3(), seen = new Set(), materialSet = new Set(), attributes = new Set();
   const local = new THREE.Box3(), placed = new THREE.Box3(), point = new THREE.Vector3(), instance = new THREE.Matrix4();
   let bytes = 16384, sceneBytes = 16384, triangles = 0, renderables = 0;
   root?.updateWorldMatrix(true, true);
@@ -46,10 +45,11 @@ export function measureReviewRoot(root) {
     if (deformed || !seen.has(geometry)) {
       seen.add(geometry);
       const indexBytes = (geometry.index?.count || 0) * 4, groups = geometry.groups.length * 32;
-      for (const key of ['position', 'normal', 'uv']) {
+      for (const key of ['position', 'normal', 'uv', 'color']) {
         const attribute = geometry.getAttribute(key);
         const size = (attribute?.count || 0) * (attribute?.itemSize || 0) * 4;
-        bytes += size; if (key === 'position') sceneBytes += size;
+        if (attribute) attributes.add(key);
+        bytes += size; if (key !== 'normal') sceneBytes += size;
       }
       bytes += indexBytes + groups; sceneBytes += indexBytes + groups;
     }
@@ -70,31 +70,7 @@ export function measureReviewRoot(root) {
     } else box.union(placed.copy(local).applyMatrix4(object.matrixWorld));
   });
   bytes += materialSet.size * 2048; sceneBytes += materialSet.size * 2048;
-  return { box, estimatedBytes: renderables ? Math.ceil(bytes * 1.05) : 0, sceneBytes: renderables ? Math.ceil(sceneBytes * 1.05) : 0, triangles: Math.ceil(triangles), renderables };
-}
-
-function averageColor(texture) {
-  if (meanColors.has(texture)) return meanColors.get(texture);
-  const image = texture.source?.data;
-  const color = new THREE.Color(1, 1, 1);
-  if (image && (image.width || image.videoWidth)) {
-    let pixels = rgbaData(texture);
-    if (!pixels) {
-      const canvas = document.createElement('canvas'); canvas.width = canvas.height = 16;
-      const context = canvas.getContext('2d', { willReadFrequently: true });
-      if (!context) throw new Error('A 2D canvas is required to sample review material colors.');
-      context.drawImage(image, 0, 0, 16, 16);
-      pixels = context.getImageData(0, 0, 16, 16).data;
-    }
-    let r = 0, g = 0, b = 0, weight = 0;
-    for (let i = 0; i < pixels.length; i += 4) {
-      const alpha = pixels[i + 3] / 255;
-      r += pixels[i] * alpha; g += pixels[i + 1] * alpha; b += pixels[i + 2] * alpha; weight += alpha;
-    }
-    if (weight) color.setRGB(r / weight / 255, g / weight / 255, b / weight / 255, texture.colorSpace === THREE.SRGBColorSpace ? THREE.SRGBColorSpace : THREE.LinearSRGBColorSpace);
-  }
-  meanColors.set(texture, color);
-  return color;
+  return { box, estimatedBytes: renderables ? Math.ceil(bytes * 1.05) : 0, sceneBytes: renderables ? Math.ceil(sceneBytes * 1.05) : 0, triangles: Math.ceil(triangles), renderables, attributes: [...attributes] };
 }
 
 // Procedural leafAtlas() is an RGBA8 DataTexture, not a CanvasImageSource. Read
@@ -106,27 +82,6 @@ function rgbaData(texture) {
     throw new Error(`Unsupported pixel format for review texture ${texture.name || texture.type}.`);
   }
   return image.data;
-}
-
-// SDK 0.7 transmits neither color attributes nor vertexColors. Preserve the mean tint in the
-// material, per geometry/material group, instead of silently turning tree wood and leaves white.
-function averageVertexColor(geometry, materialIndex) {
-  const attribute = geometry.getAttribute('color');
-  if (!attribute?.count) return null;
-  let cached = vertexMeans.get(geometry);
-  if (!cached || cached.attribute !== attribute || cached.version !== attribute.version) {
-    cached = { attribute, version: attribute.version, colors: new Map() }; vertexMeans.set(geometry, cached);
-  }
-  if (cached.colors.has(materialIndex)) return cached.colors.get(materialIndex);
-  const count = geometry.index?.count || attribute.count;
-  const ranges = materialIndex === null || !geometry.groups.length ? [{ start: 0, count }] : geometry.groups.filter((group) => (group.materialIndex || 0) === materialIndex);
-  let r = 0, g = 0, b = 0, total = 0;
-  for (const range of ranges) for (let offset = range.start, end = Math.min(count, range.start + range.count); offset < end; offset++) {
-    const i = geometry.index ? geometry.index.getX(offset) : offset;
-    r += attribute.getX(i); g += attribute.getY(i); b += attribute.getZ(i); total++;
-  }
-  const color = total ? new THREE.Color(r / total, g / total, b / total) : new THREE.Color(1, 1, 1);
-  cached.colors.set(materialIndex, color); return color;
 }
 
 /** Inspect source strings before the SDK can copy them into a catalog; leave source metadata intact. */
@@ -178,7 +133,7 @@ export function makeReviewRoot(source, profile) {
     ownedTextures.forEach((texture) => texture.dispose());
     root?.clear();
   };
-  // The SDK does not send alphaTest/transparent, but does turn on transparency for alphaMap.
+  // The SDK does not send alphaTest. Preserve cutout coverage with an explicit alpha map.
   // A white mask enables the original RGBA map's alpha without multiplying alpha twice. For
   // cutouts, a source-derived threshold mask also rejects pixels below the original alpha test.
   const alphaFor = (original) => {
@@ -211,10 +166,11 @@ export function makeReviewRoot(source, profile) {
   };
   const materialFor = (original, geometry, materialIndex) => {
     if (!original) return original;
-    const color = original.vertexColors ? averageVertexColor(geometry, materialIndex) : null;
     let byGeometry = materialCopies.get(original);
     if (!byGeometry) { byGeometry = new Map(); materialCopies.set(original, byGeometry); }
-    const key = color || null;
+    // Preserve the existing geometry/material-group identity while retaining the
+    // actual RGB/RGBA attribute instead of the old per-group mean tint.
+    const key = original.vertexColors && geometry.getAttribute('color') ? `${geometry.uuid}:${materialIndex}` : null;
     if (byGeometry.has(key)) return byGeometry.get(key);
     // Material.copy() also JSON-copies userData. A read-only prototype view supplies empty
     // metadata without briefly mutating the real material or copying its callback graph.
@@ -224,17 +180,14 @@ export function makeReviewRoot(source, profile) {
     ownedMaterials.add(material); byGeometry.set(key, material);
     material.onBeforeCompile = () => {};
     material.name ||= original.name || original.type;
-    if (color && material.color) material.color.multiply(color);
     // SDK 0.7 sends emissive color but not emissiveIntensity. Bake the sampled
     // intensity so a source surface with its emission switched off stays dark.
     if (material.emissive && typeof original.emissiveIntensity === 'number') {
       material.emissive.multiplyScalar(original.emissiveIntensity); material.emissiveIntensity = 1;
     }
-    material.vertexColors = false;
-    if (profile === 'scene') {
-      if (material.map && material.color) material.color.multiply(averageColor(material.map));
-      for (const slot of textureSlots) material[slot] = null;
-    } else if (material.map && !material.alphaMap && (original.alphaTest > 0 || original.transparent)) {
+    // copy() preserves the source vertexColors flag. A color attribute alone
+    // must not opt a shader mask into RGB shading. Both 0.9 profiles retain maps.
+    if (material.map && !material.alphaMap && (original.alphaTest > 0 || original.transparent)) {
       material.alphaMap = alphaFor(original); material.transparent = true; material.alphaTest = 0;
     }
     return material;

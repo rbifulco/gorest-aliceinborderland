@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 
 /**
- * Request-owned, position-only geometry for an overview. Identical Float32 positions are
- * welded without moving vertices, changing triangle order, or dropping authored surfaces.
- * The editor reconstructs normals; detailed representations retain the source's seams.
+ * Overview geometry keeps source UV/color seams and shared buffers intact. Position-only
+ * geometry can still be welded without moving vertices or dropping authored surfaces.
+ * The SDK scene profile omits normals, so no copy is needed to omit that attribute.
  */
 export function createOverviewGeometryCache() {
   const cache = new Map();
@@ -14,6 +14,22 @@ export function createOverviewGeometryCache() {
       if (cache.has(source)) return cache.get(source);
       const position = source.getAttribute('position'), count = position?.count || 0;
       if (!count || position.itemSize < 3) throw new Error('Overview geometry requires 3D positions.');
+      // Welding only by position would mix distinct UVs/colors at coincident
+      // vertices. Keep a cached BufferGeometry wrapper, as before the upgrade,
+      // so unnamed primitive geometry IDs retain their existing type/name.
+      // Attribute and index buffers remain shared with the authoritative source.
+      if (source.hasAttribute('uv') || source.hasAttribute('color')) {
+        const geometry = new THREE.BufferGeometry();
+        for (const [name, attribute] of Object.entries(source.attributes)) geometry.setAttribute(name, attribute);
+        geometry.setIndex(source.index);
+        geometry.name = source.name;
+        for (const group of source.groups) geometry.addGroup(group.start, group.count, group.materialIndex);
+        geometry.setDrawRange(source.drawRange.start, source.drawRange.count);
+        geometry.boundingBox = source.boundingBox?.clone() || null;
+        geometry.boundingSphere = source.boundingSphere?.clone() || null;
+        cache.set(source, geometry);
+        return geometry;
+      }
 
       // Hash the same Float32 values sent by the SDK, including normalized/interleaved inputs.
       const positions = new Float32Array(count * 3), words = new Uint32Array(positions.buffer);

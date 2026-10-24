@@ -182,8 +182,8 @@ export async function startCapture() {
       assets.add(assetId);
       registry.registerDeferred({ actorId, assetId, name, sourceRef, category, parentAssemblyId: ownerFor(owner), transform: pose(matrix), bounds: bounds(box), tags,
         stream: { capability: SPATIAL_REVIEW_ASSET_STREAM_CAPABILITY, revision: `${BUILD_ID}:${assetId}`, representations: [
-          { id: 'overview', purpose: 'overview', revision: `${BUILD_ID}:${assetId}:overview`, estimatedBytes: metrics.sceneBytes || metrics.estimatedBytes, triangles: metrics.triangles, instances: metrics.instances, attributes: ['position'], geometricError: tags.includes('scene-crown-proxy') ? 2 : 0 },
-          { id: 'detail', purpose: 'detail', revision: `${BUILD_ID}:${assetId}:detail`, estimatedBytes: metrics.estimatedBytes, triangles: metrics.triangles, instances: metrics.instances, attributes: ['position', 'normal', 'uv'], geometricError: 0 },
+          { id: 'overview', purpose: 'overview', revision: `${BUILD_ID}:${assetId}:overview`, estimatedBytes: metrics.sceneBytes || metrics.estimatedBytes, triangles: metrics.triangles, instances: metrics.instances, attributes: (metrics.attributes || ['position']).filter(key => key !== 'normal'), geometricError: tags.includes('scene-crown-proxy') ? 2 : 0 },
+          { id: 'detail', purpose: 'detail', revision: `${BUILD_ID}:${assetId}:detail`, estimatedBytes: metrics.estimatedBytes, triangles: metrics.triangles, instances: metrics.instances, attributes: metrics.attributes || ['position', 'normal', 'uv'], geometricError: 0 },
         ] },
         async produceRepresentation(context) {
           context.signal.throwIfAborted(); lifetime.signal.throwIfAborted();
@@ -261,11 +261,12 @@ export async function startCapture() {
     async function canonicalRoot(placement, category, profile, signal) {
       return retain(`${placement.assetId}:${profile}`, async () => {
         if (category === 'Props') {
-          const asset = await props.loadPropReviewAsset(placement.name, { signal });
-          try {
-            const review = makeReviewRoot(asset.root, profile);
-            return { root: review.root, dispose() { review.dispose(); asset.dispose(); } };
-          } catch (error) { asset.dispose(); throw error; }
+          // Both 0.9 profiles carry maps. Load the canonical GLB once so Scene,
+          // Asset and repeated placement groups retain the same geometry,
+          // decoded images and texture resources for this capture lifetime.
+          const sourceRoot = await retain(`${placement.assetId}:source`,
+            () => props.loadPropReviewAsset(placement.name, { signal }), signal);
+          return makeReviewRoot(sourceRoot, profile);
         }
         const asset = trees.createTreeReviewAsset(placement.sp, placement.v, profile, { signal });
         try {
