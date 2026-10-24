@@ -218,7 +218,9 @@
     "afterTests": "pass",
     "afterBuild": "pass",
     "adapterAppearance": "pass",
-    "officialEditorLocal": "discovered; UI preparation did not finish"
+    "officialEditorLocal": "discovered; UI preparation did not finish",
+    "officialEditorPublishedAsset": "pass: prop:jp_taxi Geometry ready; 4/4 texture slots ready; textured vehicle visually inspected",
+    "officialEditorPublishedScene": "partial: complete catalog accepted and Scene overview opened; focused taxi visual inspection not completed"
   },
   "navigation": {
     "sequences": 18,
@@ -379,5 +381,61 @@
         "maps": 4
       }
     ]
+  },
+  "geometryBytesBasis": "Actual negotiated typed-buffer byteLength for unique positions, normals, UVs, colors and indices; excludes node/material metadata, instance matrices and texture resources.",
+  "textureBytesBasis": "Encoded PNG bytes measured separately from decoded width*height*4 RGBA8 image storage. Full mip-chain GPU figures are approximate RGBA8 format estimates, not driver measurements.",
+  "publication": {
+    "sourceCommit": "d94aae2c84de4747aff8c4dc240452b6b2a7a75a",
+    "sourceBranch": "feat/spatial-review",
+    "url": "https://rbifulco.github.io/gorest-aliceinborderland/",
+    "buildWorkflow": {
+      "url": "https://github.com/rbifulco/gorest-aliceinborderland/actions/runs/40123381508",
+      "conclusion": "success"
+    },
+    "deploymentWorkflow": {
+      "url": "https://github.com/rbifulco/gorest-aliceinborderland/actions/runs/40123403373",
+      "conclusion": "success",
+      "workflowBranch": "main"
+    },
+    "publicDiscovery": "HTTP 200",
+    "publicGeneratedCapture": "Exact match to built source; final build ID verified",
+    "publicSdk": "0.9.0",
+    "publicProtocol": "0.9.0"
+  },
+  "officialEditor": {
+    "url": "https://spatial-review.alterno.dev/at/rbifulco.github.io/gorest-aliceinborderland/?view=asset&asset=prop%3Ajp_taxi",
+    "buildId": "gorest-8d3e96fec3f11f54d0c8d42f",
+    "catalogAccepted": {
+      "actors": 4497,
+      "assets": 920
+    },
+    "asset": {
+      "assetId": "prop:jp_taxi",
+      "status": "pass",
+      "nodes": 3,
+      "materials": 1,
+      "triangles": 3000,
+      "vertices": 4360,
+      "geometry": "ready",
+      "textureSlotsReady": 4,
+      "textureSlotsTotal": 4,
+      "uniqueTextureResources": 3,
+      "visual": "Textured blue damaged vehicle visible without selection highlighting",
+      "pageErrors": []
+    },
+    "scene": {
+      "status": "partial",
+      "objects": 4497,
+      "pathReferences": 18,
+      "actorMeshesReadyAtSnapshot": 2149,
+      "focusedSubjectVerified": false,
+      "limitation": "The Scene overview opened, but tree interaction and screenshot requests timed out in bounded software-rendered browser attempts before framing the taxi. The focused taxi Scene appearance check is incomplete; this is not a catalog or producer failure.",
+      "resourceResponses": 241,
+      "protocolFailures": [],
+      "pageErrors": [],
+      "independentAttempt": "Same partial outcome without relying on a route visibility class"
+    },
+    "experience": "Navigation data verified through the bridge; interactive view not verified in this session",
+    "scope": "Read-only. No feedback notes, transform/visibility proposals or source-edit round trip were created. Hardware browser performance and full-city appearance are not qualified."
   }
 }

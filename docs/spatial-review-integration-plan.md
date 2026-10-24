@@ -498,7 +498,7 @@ The final adapter sorts direct-root registration by stable metadata ID. Tree
 components and materials use the same `Wood`/`Leaves` semantic names in overview
 and detail, preserving targets when a representation is replaced.
 
-### Hosted editor acceptance
+### Historical hosted editor attempt (SDK 0.8)
 
 The initial full-detail overview attempt used 1,763 distinct assets and hit the
 editor's 300-second absolute preparation deadline at 180 ready assets. Successful
@@ -591,9 +591,41 @@ There are no prepared review packages to migrate.
   node, material and geometry IDs match in both profiles, including unnamed
   primitive geometries. Attribute buffers remain shared.
 
-The official editor discovered the ordinary local website and began preparation.
-Its UI became unresponsive while preparing this large catalog in SwiftShader;
-interactive Scene/Asset/Experience acceptance and feedback export were not
-completed locally. This is consistent with the historical preparation limit
-above, and is not reported as a passing editor view check. Deployment and hosted
-editor results must be assessed separately from these producer checks.
+Geometry byte counts above sum the actual negotiated typed buffers, including
+actual index-buffer widths, once per unique geometry. They exclude node/material
+metadata, instance matrices and the separately reported texture resources.
+
+### Published acceptance
+
+The update was published from commit
+[`d94aae2`](https://github.com/rbifulco/gorest-aliceinborderland/commit/d94aae2c84de4747aff8c4dc240452b6b2a7a75a).
+Both existing workflow stages passed: [Spatial Review build](https://github.com/rbifulco/gorest-aliceinborderland/actions/runs/40123381508)
+on `feat/spatial-review`, then the default branch's
+[Pages deployment](https://github.com/rbifulco/gorest-aliceinborderland/actions/runs/40123403373).
+Public discovery returned HTTP 200. The published generated capture matches the
+built source exactly, including `gorest-8d3e96fec3f11f54d0c8d42f`; the published
+SDK and protocol packages both report 0.9.0. Hosting configuration was preserved.
+
+The current [official Asset view](https://spatial-review.alterno.dev/at/rbifulco.github.io/gorest-aliceinborderland/?view=asset&asset=prop%3Ajp_taxi)
+accepted the final catalog of 4,497 actors and 920 asset families. The taxi
+rendered as the textured blue damaged vehicle, with 3 nodes, 1 material,
+3,000 triangles, 4,360 vertices, **Geometry ready** and **4/4 textures ready**.
+Those four material slots use three shared texture resources. The read-only
+screenshot was inspected without selection highlighting; no page errors occurred.
+
+The Scene overview also opened with all 4,497 objects and 18 path references.
+An independent bounded attempt recorded 2,149 actor meshes ready and 241 texture
+resource responses, with no protocol or page errors. The focused taxi Scene
+visual check remains incomplete: tree interaction and screenshot requests timed
+out in the software-rendered browser before the taxi could be framed. Repeating
+the attempt without depending on the route visibility class reached the same
+limit. This is not reported as a passing focused Scene check or as a catalog or
+producer failure. Scene-profile geometry, UVs and texture decoding passed the
+independent real bridge checks above. Interactive Experience inspection was
+not completed.
+
+These browser checks used headless Chromium with SwiftShader. Earlier local
+and full-city preparation attempts were slow or timed out; no hardware-browser
+performance qualification or full-city visual qualification is claimed. No
+feedback notes, visibility/transform proposals or disposable source edits were
+created. Existing review identities and user feedback were preserved.
